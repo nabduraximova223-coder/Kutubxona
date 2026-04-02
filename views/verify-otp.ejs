@@ -1,0 +1,27 @@
+<%- include('partials/header') %>
+
+    <div class="form-container">
+        <h2 style="text-align: center; margin-bottom: 1rem;">SMS Kodni Tasdiqlash</h2>
+
+        <% if (locals.error) { %>
+            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <p style="text-align: center; margin-bottom: 1rem;">
+                    Email manzilingizga yuborilgan kodni kiriting.
+                    <br>
+                    <small>(Spam papkasini ham tekshiring)</small>
+                </p>
+
+                <form action="/verify-otp" method="POST">
+                    <div class="form-group">
+                        <label>Tasdiqlash Kodi</label>
+                        <input type="text" name="otp" required placeholder="123456">
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Tasdiqlash</button>
+                </form>
+    </div>
+
+    <%- include('partials/footer') %>
