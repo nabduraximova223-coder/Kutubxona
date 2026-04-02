@@ -1,11 +1,10 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const path = require('path');
 const db = require('./database');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -13,13 +12,28 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Session Setup
-app.use(session({
-    secret: 'tatu_library_secret_key',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { secure: false } // Set to true if using HTTPS
+// Cookie-Session (works on Vercel serverless)
+app.use(cookieSession({
+    name: 'session',
+    secret: process.env.SESSION_SECRET || 'tatu_library_secret_key',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    secure: false,
+    httpOnly: true
 }));
+
+// Session save compatibility shim
+app.use((req, res, next) => {
+    if (req.session && !req.session.save) {
+        req.session.save = (cb) => { if (cb) cb(); };
+    }
+    if (req.session && !req.session.destroy) {
+        req.session.destroy = (cb) => {
+            req.session = null;
+            if (cb) cb();
+        };
+    }
+    next();
+});
 
 // View Engine Setup
 app.set('view engine', 'ejs');
@@ -29,11 +43,9 @@ const locales = require('./locales');
 
 // Global variables and Language Detection
 app.use((req, res, next) => {
-    // Set language (default to uz)
     const lang = (req.session && req.session.lang) ? req.session.lang : 'uz';
     if (req.session) req.session.lang = lang;
 
-    // Translation helper
     const t = (key) => {
         const cleanKey = key.trim();
         return locales[lang] && locales[lang][cleanKey] ? locales[lang][cleanKey] : cleanKey;
@@ -45,18 +57,14 @@ app.use((req, res, next) => {
     next();
 });
 
-// Set Language Route (Global)
+// Set Language Route
 app.get('/set-lang/:lang', (req, res) => {
     const lang = req.params.lang;
     if (['uz', 'ru'].includes(lang)) {
         req.session.lang = lang;
-        req.session.save((err) => {
-            if (err) console.error("Session save error:", err);
-            res.redirect('back' || '/');
-        });
-    } else {
-        res.redirect('back' || '/');
     }
+    const referer = req.headers.referer || '/';
+    res.redirect(referer);
 });
 
 // Routes
@@ -72,7 +80,12 @@ app.use('/', settingsRoutes);
 app.use('/admin', adminRoutes);
 app.use('/chat', chatRoutes);
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Start Server (local dev)
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;
