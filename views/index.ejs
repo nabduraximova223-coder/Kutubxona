@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+
+    <div class="welcome-container">
+        <div class="tatu-logo">
+            <img src="/images/tatu-logo.png" alt="Logo">
+        </div>
+        <h1 class="welcome-title">
+            <%= locals.t ? locals.t('welcome') : 'TATU TALABALARI UCHUN RAQAMLI KUTUBXONA' %>
+        </h1>
+        <p class="welcome-subtitle">
+            <%= locals.t ? locals.t('subtitle') : 'Elektron kitoblar va ilmiy resurslar platformasi' %>
+        </p>
+        <div class="welcome-actions">
+            <% if (!locals.user) { %>
+                <a href="/login" class="btn">
+                    <%= locals.t ? locals.t('login') : 'Kirish' %>
+                </a>
+                <a href="/register" class="btn">
+                    <%= locals.t ? locals.t('register') : 'Ro\' yxatdan o\'tish' %>
+                </a>
+                <% } else { %>
+                    <a href="/library" class="btn">
+                        <%= locals.t ? locals.t('books') : 'Kitoblar' %>
+                    </a>
+                    <a href="/logout" class="btn">
+                        <%= locals.t ? locals.t('logout') : 'Chiqish' %>
+                    </a>
+                    <% } %>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
