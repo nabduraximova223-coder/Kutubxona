@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+    <div class="form-container">
+        <h2 style="text-align: center; margin-bottom: 1rem;">
+            <%= locals.t ? locals.t('register_title') : 'Ro\' yxatdan o\'tish' %>
+        </h2>
+
+        <% if (locals.error) { %>
+            <div style="background: #ffebee; color: #c62828; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
+                <%= error %>
+            </div>
+            <% } %>
+
+                <form action="/register" method="POST">
+                    <div class="form-group">
+                        <label>
+                            <%= locals.t ? locals.t('email') : 'Email manzil' %>
+                        </label>
+                        <input type="email" name="email" required placeholder="example@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <%= locals.t ? locals.t('math_example') : 'Matematik misol' %>: <strong>
+                                    <%= locals.challenge || challenge %> = ?
+                                </strong>
+                        </label>
+                        <input type="text" name="challenge_answer" required
+                            placeholder="<%= locals.t ? locals.t('enter_answer') : 'Javobni kiriting' %>">
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%;">
+                        <%= locals.t ? locals.t('continue') : 'Davom etish' %>
+                    </button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    <%= locals.t ? locals.t('have_account') : 'Hisobingiz bormi?' %> <a href="/login">
+                            <%= locals.t ? locals.t('login') : 'Kirish' %>
+                        </a>
+                </p>
+    </div>
+
+    <%- include('partials/footer') %>
