@@ -3,7 +3,6 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const db = require('../database');
 
-// Middleware to check if user is logged in
 function isAuthenticated(req, res, next) {
     if (req.session && req.session.user) {
         return next();
@@ -12,31 +11,31 @@ function isAuthenticated(req, res, next) {
 }
 
 // Settings Page
-router.get('/settings', isAuthenticated, (req, res) => {
+router.get('/settings', isAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
-    db.get("SELECT id, username, email FROM users WHERE id = ?", [userId], (err, user) => {
-        if (err || !user) {
-            return res.redirect('/');
-        }
+    try {
+        const user = await db.getRow("SELECT id, username, email FROM users WHERE id = ?", [userId]);
+        if (!user) return res.redirect('/');
         res.render('settings', {
             user: req.session.user,
             profile: user,
             error: null,
             success: null
         });
-    });
+    } catch (err) {
+        console.error(err);
+        res.redirect('/');
+    }
 });
 
-
 // Change Password
-router.post('/settings/change-password', isAuthenticated, (req, res) => {
+router.post('/settings/change-password', isAuthenticated, async (req, res) => {
     const { current_password, new_password, confirm_password } = req.body;
     const userId = req.session.user.id;
 
-    db.get("SELECT password, username, email FROM users WHERE id = ?", [userId], (err, user) => {
-        if (err || !user) {
-            return res.redirect('/');
-        }
+    try {
+        const user = await db.getRow("SELECT password, username, email FROM users WHERE id = ?", [userId]);
+        if (!user) return res.redirect('/');
 
         const renderSettings = (error, success) => {
             res.render('settings', {
@@ -63,13 +62,18 @@ router.post('/settings/change-password', isAuthenticated, (req, res) => {
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(new_password, salt);
 
-        db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId], (err) => {
-            if (err) {
-                return renderSettings('Xatolik yuz berdi', null);
-            }
-            renderSettings(null, 'Parol muvaffaqiyatli o\'zgartirildi');
+        await db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
+        renderSettings(null, 'Parol muvaffaqiyatli o\'zgartirildi');
+
+    } catch (err) {
+        console.error(err);
+        res.render('settings', {
+            user: req.session.user,
+            profile: req.session.user,
+            error: 'Xatolik yuz berdi',
+            success: null
         });
-    });
+    }
 });
 
 module.exports = router;
