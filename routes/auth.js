@@ -9,10 +9,8 @@ router.get('/', (req, res) => {
     res.render('index', { user: req.session.user });
 });
 
-// Register Page
 // Register Page (Step 1: Email)
 router.get('/register', (req, res) => {
-    // Generate math challenge
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
     req.session.challenge = {
@@ -26,7 +24,7 @@ router.get('/register', (req, res) => {
 });
 
 // Register Logic (Step 1: Email -> OTP)
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { email, challenge_answer } = req.body;
 
     if (!email) {
@@ -37,7 +35,6 @@ router.post('/register', (req, res) => {
     }
 
     if (!challenge_answer || challenge_answer !== req.session.challenge.answer) {
-        // Regenerate challenge on failure
         const num1 = Math.floor(Math.random() * 10) + 1;
         const num2 = Math.floor(Math.random() * 10) + 1;
         req.session.challenge = {
@@ -50,23 +47,21 @@ router.post('/register', (req, res) => {
         });
     }
 
-    // Check if email already used
-    db.get("SELECT * FROM users WHERE email = ?", [email], (err, row) => {
+    try {
+        const row = await db.getRow("SELECT * FROM users WHERE email = ?", [email]);
         if (row) {
             return res.render('register', { error: "Bu email allaqachon ro'yxatdan o'tgan" });
         }
 
-        // Skip OTP and go directly to completion step
-        req.session.registration = {
-            email: email,
-            step: 'complete'
-        };
-
+        req.session.registration = { email: email, step: 'complete' };
         res.redirect('/complete-register');
-    });
+    } catch (err) {
+        console.error(err);
+        res.render('register', { error: "Xatolik yuz berdi", challenge: "" });
+    }
 });
 
-// Verify OTP Page (Step 2: Enter Code)
+// Verify OTP Page
 router.get('/verify-otp', (req, res) => {
     if (!req.session.registration || req.session.registration.step !== 'verify') {
         return res.redirect('/register');
@@ -94,7 +89,7 @@ router.post('/verify-otp', (req, res) => {
     }
 });
 
-// Complete Registration Page (Step 3: Create Login/Password)
+// Complete Registration Page
 router.get('/complete-register', (req, res) => {
     if (!req.session.registration || req.session.registration.step !== 'complete') {
         return res.redirect('/register');
@@ -103,7 +98,7 @@ router.get('/complete-register', (req, res) => {
 });
 
 // Complete Registration Logic
-router.post('/complete-register', (req, res) => {
+router.post('/complete-register', async (req, res) => {
     const { username, password } = req.body;
     const sessionReg = req.session.registration;
 
@@ -115,27 +110,25 @@ router.post('/complete-register', (req, res) => {
         return res.render('complete-register', { error: "Barcha maydonlarni to'ldiring" });
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-
-    db.run("INSERT INTO users (email, username, password) VALUES (?, ?, ?)",
-        [sessionReg.email, username, hashedPassword],
-        function (err) {
-            if (err) {
-                console.error(err);
-                if (err.message.includes("UNIQUE constraint failed: users.username")) {
-                    return res.render('complete-register', { error: "Bu login allaqachon band. Iltimos, boshqa login tanlang." });
-                }
-                if (err.message.includes("UNIQUE constraint failed: users.email")) {
-                    return res.render('complete-register', { error: "Bu email allaqachon ro'yxatdan o'tgan." });
-                }
-                // Boshqa xatoliklar uchun
-                return res.render('complete-register', { error: "Tizim xatosi: " + err.message });
-            }
-            // Clear session
-            delete req.session.registration;
-            res.redirect('/login');
-        });
+    try {
+        const hashedPassword = bcrypt.hashSync(password, 10);
+        await db.run(
+            "INSERT INTO users (email, username, password) VALUES (?, ?, ?)",
+            [sessionReg.email, username, hashedPassword]
+        );
+        delete req.session.registration;
+        res.redirect('/login');
+    } catch (err) {
+        console.error(err);
+        const msg = err.message || '';
+        if (msg.includes('UNIQUE') && msg.includes('username')) {
+            return res.render('complete-register', { error: "Bu login allaqachon band. Iltimos, boshqa login tanlang." });
+        }
+        if (msg.includes('UNIQUE') && msg.includes('email')) {
+            return res.render('complete-register', { error: "Bu email allaqachon ro'yxatdan o'tgan." });
+        }
+        return res.render('complete-register', { error: "Tizim xatosi: " + msg });
+    }
 });
 
 // Login Page
@@ -144,11 +137,11 @@ router.get('/login', (req, res) => {
 });
 
 // Login Logic
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
-    db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-        if (err || !row) {
+    try {
+        const row = await db.getRow("SELECT * FROM users WHERE username = ?", [username]);
+        if (!row) {
             return res.render('login', { error: "Login yoki parol noto'g'ri" });
         }
 
@@ -158,21 +151,21 @@ router.post('/login', (req, res) => {
         }
 
         req.session.user = {
-            id: row.id,
+            id: Number(row.id),
             username: row.username,
             role: row.role
         };
         res.redirect('/library');
-    });
+    } catch (err) {
+        console.error(err);
+        res.render('login', { error: "Xatolik yuz berdi" });
+    }
 });
 
 // Logout
 router.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) console.error("Session destroy error:", err);
-        res.clearCookie('connect.sid'); // Default express-session cookie name
-        res.redirect('/');
-    });
+    req.session = null;
+    res.redirect('/');
 });
 
 module.exports = router;
