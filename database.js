@@ -1,78 +1,74 @@
-const { createClient } = require('@libsql/client');
+const { Pool } = require('pg');
 
-const db = createClient({
-    url: process.env.TURSO_DATABASE_URL || 'file:local.db',
-    authToken: process.env.TURSO_AUTH_TOKEN
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/postgres',
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 async function createTables() {
-    await db.execute(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE,
-        username TEXT UNIQUE,
-        password TEXT,
-        role TEXT DEFAULT 'user'
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) UNIQUE,
+        username VARCHAR(255) UNIQUE,
+        password VARCHAR(255),
+        role VARCHAR(50) DEFAULT 'user'
     )`);
 
-    await db.execute(`CREATE TABLE IF NOT EXISTS books (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        author TEXT,
-        subject TEXT,
-        faculty TEXT,
+    await pool.query(`CREATE TABLE IF NOT EXISTS books (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255),
+        author VARCHAR(255),
+        subject VARCHAR(255),
+        faculty VARCHAR(255),
         course INTEGER,
         description TEXT,
-        filepath TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        filepath VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    await db.execute(`CREATE TABLE IF NOT EXISTS chats (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        title TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    await pool.query(`CREATE TABLE IF NOT EXISTS chats (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    await db.execute(`CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        chat_id INTEGER,
-        role TEXT,
+    await pool.query(`CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
+        role VARCHAR(50),
         content TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (chat_id) REFERENCES chats(id) ON DELETE CASCADE
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Create admin user if not exists
     const bcrypt = require('bcrypt');
-    const existing = await db.execute("SELECT * FROM users WHERE username = 'admin'");
+    const existing = await pool.query("SELECT * FROM users WHERE username = 'admin'");
     if (existing.rows.length === 0) {
         const hash = bcrypt.hashSync('admin123', 10);
-        await db.execute({
-            sql: "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-            args: ['admin', hash, 'admin']
-        });
+        await pool.query(
+            "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)",
+            ['admin', hash, 'admin']
+        );
         console.log("Admin user created.");
     }
 }
 
-// Helper wrappers matching sqlite3 API style
-db.getRow = async (sql, params = []) => {
-    const result = await db.execute({ sql, args: params });
-    return result.rows[0] || null;
+const db = {
+    getRow: async (sql, params = []) => {
+        const res = await pool.query(sql, params);
+        return res.rows[0] || null;
+    },
+    getAll: async (sql, params = []) => {
+        const res = await pool.query(sql, params);
+        return res.rows;
+    },
+    run: async (sql, params = []) => {
+        const res = await pool.query(sql, params);
+        return res;
+    },
+    pool
 };
 
-db.getAll = async (sql, params = []) => {
-    const result = await db.execute({ sql, args: params });
-    return result.rows;
-};
-
-db.run = async (sql, params = []) => {
-    const result = await db.execute({ sql, args: params });
-    return { lastID: Number(result.lastInsertRowid), changes: result.rowsAffected };
-};
-
-// Initialize tables on startup
 createTables().catch(console.error);
 
 module.exports = db;
