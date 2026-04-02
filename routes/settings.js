@@ -14,7 +14,7 @@ function isAuthenticated(req, res, next) {
 router.get('/settings', isAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
     try {
-        const user = await db.getRow("SELECT id, username, email FROM users WHERE id = ?", [userId]);
+        const user = await db.getRow("SELECT id, username, email FROM users WHERE id = $1", [userId]);
         if (!user) return res.redirect('/');
         res.render('settings', {
             user: req.session.user,
@@ -34,7 +34,7 @@ router.post('/settings/change-password', isAuthenticated, async (req, res) => {
     const userId = req.session.user.id;
 
     try {
-        const user = await db.getRow("SELECT password, username, email FROM users WHERE id = ?", [userId]);
+        const user = await db.getRow("SELECT password, username, email FROM users WHERE id = $1", [userId]);
         if (!user) return res.redirect('/');
 
         const renderSettings = (error, success) => {
@@ -62,7 +62,7 @@ router.post('/settings/change-password', isAuthenticated, async (req, res) => {
         const salt = bcrypt.genSaltSync(10);
         const hashedPassword = bcrypt.hashSync(new_password, salt);
 
-        await db.run("UPDATE users SET password = ? WHERE id = ?", [hashedPassword, userId]);
+        await db.run("UPDATE users SET password = $1 WHERE id = $2", [hashedPassword, userId]);
         renderSettings(null, 'Parol muvaffaqiyatli o\'zgartirildi');
 
     } catch (err) {
