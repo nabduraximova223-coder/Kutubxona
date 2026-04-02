@@ -72,7 +72,7 @@ const authRoutes = require('./routes/auth');
 const bookRoutes = require('./routes/books');
 const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
-const chatRoutes = require('./routes/chat');
+const chatRoutes = require('./routes/chat_route');
 
 app.use('/', authRoutes);
 app.use('/', bookRoutes);
