@@ -11,21 +11,23 @@ router.get('/library', isAuthenticated, async (req, res) => {
     const { q, faculty, course, subject } = req.query;
     let sql = "SELECT * FROM books WHERE 1=1";
     let params = [];
+    let pCount = 1;
 
     if (q) {
-        sql += " AND (title LIKE ? OR author LIKE ?)";
+        sql += ` AND (title ILIKE $${pCount} OR author ILIKE $${pCount + 1})`;
         params.push(`%${q}%`, `%${q}%`);
+        pCount += 2;
     }
     if (course) {
-        sql += " AND course = ?";
+        sql += ` AND course = $${pCount++}`;
         params.push(parseInt(course));
     }
     if (faculty) {
-        sql += " AND faculty = ?";
+        sql += ` AND faculty = $${pCount++}`;
         params.push(faculty);
     }
     if (subject) {
-        sql += " AND subject = ?";
+        sql += ` AND subject = $${pCount++}`;
         params.push(subject);
     }
 
@@ -80,7 +82,7 @@ router.get('/library', isAuthenticated, async (req, res) => {
 // Download Book
 router.get('/download/:id', isAuthenticated, async (req, res) => {
     try {
-        const row = await db.getRow("SELECT filepath FROM books WHERE id = ?", [req.params.id]);
+        const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
         if (!row) return res.status(404).send("Kitob topilmadi");
         res.download(row.filepath);
     } catch (err) {
