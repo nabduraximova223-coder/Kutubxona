@@ -48,7 +48,7 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        const row = await db.getRow("SELECT * FROM users WHERE email = ?", [email]);
+        const row = await db.getRow("SELECT * FROM users WHERE email = $1", [email]);
         if (row) {
             return res.render('register', { error: "Bu email allaqachon ro'yxatdan o'tgan" });
         }
@@ -113,7 +113,7 @@ router.post('/complete-register', async (req, res) => {
     try {
         const hashedPassword = bcrypt.hashSync(password, 10);
         await db.run(
-            "INSERT INTO users (email, username, password) VALUES (?, ?, ?)",
+            "INSERT INTO users (email, username, password) VALUES ($1, $2, $3)",
             [sessionReg.email, username, hashedPassword]
         );
         delete req.session.registration;
@@ -121,10 +121,10 @@ router.post('/complete-register', async (req, res) => {
     } catch (err) {
         console.error(err);
         const msg = err.message || '';
-        if (msg.includes('UNIQUE') && msg.includes('username')) {
+        if (msg.includes('unique constraint') && msg.includes('users_username_key')) {
             return res.render('complete-register', { error: "Bu login allaqachon band. Iltimos, boshqa login tanlang." });
         }
-        if (msg.includes('UNIQUE') && msg.includes('email')) {
+        if (msg.includes('unique constraint') && msg.includes('users_email_key')) {
             return res.render('complete-register', { error: "Bu email allaqachon ro'yxatdan o'tgan." });
         }
         return res.render('complete-register', { error: "Tizim xatosi: " + msg });
@@ -140,7 +140,7 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const row = await db.getRow("SELECT * FROM users WHERE username = ?", [username]);
+        const row = await db.getRow("SELECT * FROM users WHERE username = $1", [username]);
         if (!row) {
             return res.render('login', { error: "Login yoki parol noto'g'ri" });
         }
