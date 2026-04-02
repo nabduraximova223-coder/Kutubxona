@@ -1,0 +1,103 @@
+<%- include('partials/header') %>
+
+    <h2 style="margin-bottom: 1rem;">Admin Panel</h2>
+
+    <div class="form-container" style="max-width: 800px; margin: 0 auto 2rem;">
+        <h3>Yangi kitob qo'shish</h3>
+        <form action="/admin/add" method="POST" enctype="multipart/form-data">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Kitob nomi</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Muallif</label>
+                    <input type="text" name="author" required>
+                </div>
+                <div class="form-group">
+                    <label>Fan / Soha</label>
+                    <input type="text" name="subject" required>
+                </div>
+                <div class="form-group">
+                    <label>Fakultet</label>
+                    <select name="faculty" required>
+                        <option value="ki">Kompyuter injiniringi</option>
+                        <option value="di">Dasturiy injiniring</option>
+                        <option value="ax">Axborot xavfsizligi</option>
+                        <option value="tt">Telekommunikatsiya texnologiyalari</option>
+                        <option value="tv">Televizion texnologiyalar</option>
+                        <option value="im">Iqtisodiyot va menejment</option>
+                        <option value="kt">Kasb ta'limi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Kurs</label>
+                    <select name="course" required>
+                        <option value="1">1-kurs</option>
+                        <option value="2">2-kurs</option>
+                        <option value="3">3-kurs</option>
+                        <option value="4">4-kurs</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>PDF Fayl</label>
+                    <input type="file" name="bookFile" accept="application/pdf" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Tavsif</label>
+                <textarea name="description" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn">Qo'shish</button>
+        </form>
+    </div>
+
+    <h3>Kitoblar ro'yxati</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nomi</th>
+                <th>Muallif</th>
+                <th>Fan</th>
+                <th>Fakultet</th>
+                <th>Kurs</th>
+                <th>Amallar</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% books.forEach(book=> { %>
+                <tr>
+                    <td>
+                        <%= book.id %>
+                    </td>
+                    <td>
+                        <%= book.title %>
+                    </td>
+                    <td>
+                        <%= book.author %>
+                    </td>
+                    <td>
+                        <%= book.subject %>
+                    </td>
+                    <td>
+                        <%= (book.faculty && t(book.faculty)) ? t(book.faculty) : (book.faculty || 'Noma\' lum') %>
+                    </td>
+                    <td>
+                        <%= (book.course && t('course_' + book.course)) ? t('course_' + book.course) : (book.course
+                            || 'Noma\' lum') + '-kurs' %>
+                    </td>
+                    <td class="actions">
+                        <form action="/admin/delete/<%= book.id %>" method="POST"
+                            onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');">
+                            <button type="submit" class="btn btn-danger"
+                                style="padding: 0.5rem 1rem; font-size: 0.9rem;">O'chirish</button>
+                        </form>
+                        <!-- Edit functionality could be added here as a modal or separate page -->
+                    </td>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>
+
+    <%- include('partials/footer') %>
