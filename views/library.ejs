@@ -1,0 +1,141 @@
+<%- include('partials/header') %>
+
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <% if (locals.courseFilter) { %>
+                <i class="fas fa-chevron-right"></i>
+                <a href="/library?course=<%= courseFilter %>">
+                    <%= locals.t ? locals.t('course_' + courseFilter) : courseFilter + '-kurs' %>
+                </a>
+                <% } %>
+                    <% if (locals.facultyFilter) { %>
+                        <i class="fas fa-chevron-right"></i>
+                        <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>">
+                            <%= (locals.t && locals.faculties) ? locals.t(faculties.find(f=> f.id ===
+                                facultyFilter)?.name_key) : facultyFilter %>
+                        </a>
+                        <% } %>
+                            <% if (locals.subjectFilter) { %>
+                                <i class="fas fa-chevron-right"></i>
+                                <span>
+                                    <%= locals.t ? locals.t(subjectFilter) : subjectFilter %>
+                                </span>
+                                <% } %>
+        </div>
+
+        <% if (locals.viewMode==='courses' ) { %>
+            <!-- Step 1: Course Selection -->
+            <h2 class="section-title">
+                <%= locals.t ? locals.t('select_course') : 'Kursni tanlang' %>
+            </h2>
+            <div class="course-grid">
+                <% courses.forEach(course=> { %>
+                    <a href="/library?course=<%= course.id %>" class="course-card">
+                        <i class="fas <%= course.icon %>"></i>
+                        <span>
+                            <%= locals.t ? locals.t(course.name_key) : course.name_key %>
+                        </span>
+                    </a>
+                    <% }) %>
+            </div>
+
+            <% } else if (locals.viewMode==='faculties' ) { %>
+                <!-- Step 2: Faculty Selection -->
+                <h2 class="section-title">
+                    <%= locals.t ? locals.t('select_faculty') : 'Fakultetni tanlang' %>
+                </h2>
+                <div class="faculty-grid">
+                    <% faculties.forEach(faculty=> { %>
+                        <a href="/library?course=<%= courseFilter %>&faculty=<%= faculty.id %>" class="faculty-card">
+                            <i class="fas <%= faculty.icon %>"></i>
+                            <span>
+                                <%= locals.t ? locals.t(faculty.name_key) : faculty.name_key %>
+                            </span>
+                        </a>
+                        <% }) %>
+                </div>
+
+                <% } else if (locals.viewMode==='subjects' ) { %>
+                    <!-- Step 3: Subject Selection -->
+                    <h2 class="section-title">
+                        Fanlarni tanlang
+                    </h2>
+                    <div class="subject-grid">
+                        <% subjects.forEach(subject=> { %>
+                            <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>&subject=<%= subject %>"
+                                class="subject-card">
+                                <i class="fas fa-book"></i>
+                                <span>
+                                    <%= locals.t ? locals.t(subject) : subject %>
+                                </span>
+                            </a>
+                            <% }) %>
+                    </div>
+
+                    <% } else if (locals.viewMode==='books' ) { %>
+                        <!-- Step 3: Book Listing -->
+                        <div class="books-view">
+                            <div class="view-header" style="justify-content: space-between;">
+                                <h2>
+                                    <i class="fas fa-layer-group"></i>
+                                    <%= locals.t ? locals.t('books') : 'Kitoblar' %>
+                                </h2>
+                                <div class="search-compact">
+                                    <form action="/library" method="GET" style="display: flex; gap: 10px;">
+                                        <input type="hidden" name="course" value="<%= courseFilter %>">
+                                        <input type="hidden" name="faculty" value="<%= facultyFilter %>">
+                                        <input type="text" name="q"
+                                            placeholder="<%= locals.t ? locals.t('search') : 'Qidirish...' %>"
+                                            value="<%= locals.search || '' %>"
+                                            style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;"><i
+                                                class="fas fa-search"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="book-grid">
+                                <% if (locals.books && books.length> 0) { %>
+                                    <% books.forEach(book=> { %>
+                                        <div class="book-card">
+                                            <div class="book-info">
+                                                <h3 class="book-title">
+                                                    <%= book.title %>
+                                                </h3>
+                                                <p class="book-author"><i class="fas fa-user-edit"></i>
+                                                    <%= book.author %>
+                                                </p>
+                                                <p class="book-desc">
+                                                    <%= book.description %>
+                                                </p>
+                                                <div style="margin-top: 1.5rem;">
+                                                    <a href="/download/<%= book.id %>" class="btn btn-primary"
+                                                        style="width: 100%; text-align: center;">
+                                                        <i class="fas fa-file-pdf"></i>
+                                                        <%= locals.t ? locals.t('download') : 'Yuklab olish' %>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                            <% } else { %>
+                                                <div class="no-results"
+                                                    style="grid-column: 1/-1; text-align: center; padding: 4rem; background: #fff; border-radius: 16px; border: 1px dashed var(--border-color);">
+                                                    <i class="fas fa-search"
+                                                        style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                                                    <p>
+                                                        <%= locals.t ? locals.t('not_found') : 'Kitoblar topilmadi' %>
+                                                    </p>
+                                                    <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>"
+                                                        class="btn btn-outline" style="margin-top: 1rem;">
+                                                        <%= locals.t ? locals.t('clear') : 'Tozalash' %>
+                                                    </a>
+                                                </div>
+                                                <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+    </div>
+
+    <%- include('partials/footer') %>
