@@ -1,0 +1,150 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../database');
+
+// Middleware to check if user is logged in
+const isAuthenticated = (req, res, next) => {
+    if (req.session && req.session.user) {
+        return next();
+    }
+    res.redirect('/login');
+};
+
+// Library Page (Protected)
+router.get('/library', isAuthenticated, (req, res) => {
+    const { q, faculty, course, subject } = req.query;
+    let sql = "SELECT * FROM books WHERE 1=1";
+    let params = [];
+
+    if (q) {
+        sql += " AND (title LIKE ? OR author LIKE ?)";
+        params.push(`%${q}%`, `%${q}%`);
+    }
+
+    if (course) {
+        sql += " AND course = ?";
+        params.push(parseInt(course));
+    }
+
+    if (faculty) {
+        sql += " AND faculty = ?";
+        params.push(faculty);
+    }
+
+    if (subject) {
+        sql += " AND subject = ?";
+        params.push(subject);
+    }
+
+    const tatuFaculties = [
+        { id: 'ki', name_key: 'ki', icon: 'fa-laptop-code' },
+        { id: 'di', name_key: 'di', icon: 'fa-code' },
+        { id: 'ax', name_key: 'ax', icon: 'fa-shield-alt' },
+        { id: 'tt', name_key: 'tt', icon: 'fa-tower-broadcast' },
+        { id: 'tv', name_key: 'tv', icon: 'fa-tv' },
+        { id: 'im', name_key: 'im', icon: 'fa-chart-line' },
+        { id: 'kt', name_key: 'kt', icon: 'fa-chalkboard-teacher' }
+    ];
+
+    const courses = [
+        { id: 1, name_key: 'course_1', icon: 'fa-graduation-cap' },
+        { id: 2, name_key: 'course_2', icon: 'fa-graduation-cap' },
+        { id: 3, name_key: 'course_3', icon: 'fa-graduation-cap' },
+        { id: 4, name_key: 'course_4', icon: 'fa-graduation-cap' }
+    ];
+
+    // Subjects data
+    const subjectsMap = {
+        'ki_1': [
+            "Ingliz tili", "Hisob (Calculus)", "Fizika", "Falsafa", "Dinshunoslik",
+            "Dasturlash", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar",
+            "Differentsial tenglamalar", "Akademik yozuv"
+        ],
+        'ki_2': [
+            "Sun'iy intellekt asoslari", "Ma'lumotlar tuzilmasi va algoritmlar", "Kompyuterni tashkil etish",
+            "Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Veb ilovalar yaratish",
+            "Ma'lumotlar bazasi", "Kompyuter tarmoqlari", "Ehtimollar va statistika", "Amaliy intellektual tizimlar"
+        ],
+        'ki_3': [
+            "Operatsion tizimlar", "Moliyaviy savodxonlik asoslari", "Inson kompyuter interfeysi",
+            "Bulutli hisoblash", "Bilimlar bazasini loyihalash", "O'rnatilgan tizimlar",
+            "Machine learning", "Jismoniy madaniyat va sport", "IoT: tizimlar va ilovalar"
+        ],
+        'kt_1': [
+            "O'zbekistonning eng yangi tarixi", "Ingliz tili", "Hisob(Calculus)", "Fizika",
+            "Dasturlash", "Akademik yozuv", "Falsafa", "Dinshunoslik",
+            "Diskret tuzilmalar", "Differentsial tenglamalar"
+        ],
+        'kt_2': [
+            "Ma'lumotlar tuzilmasi va algoritmlar", "Ma'lumotlar bazasi", "Kompyuterni tashkil etish",
+            "Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Veb ilovalar yaratish",
+            "Sun'iy intellekt asoslari", "Masofaviy ta'lim texnologiyalari",
+            "Kompyuter tarmoqlari", "Ehtimollar va statistika"
+        ],
+        'kt_3': [
+            "Ta'lim nazariyasi", "Ta'limga kirish", "Operatsion tizimlar",
+            "Jismoniy madaniyat va sport", "Elektron pedagogika",
+            "Raqamli texnologiya va innovatsiyalar", "Pedagogika. Psixologiya",
+            "O'rnatilgan tizimlar", "Kreativ pedagogika"
+        ],
+        'default': [
+            "Mutaxassislikka kirish",
+            "Xorijiy til",
+            "Oliy matematika",
+            "Fizika",
+            "Axborot texnologiyalari",
+            "Sotsiologiya"
+        ]
+    };
+
+    const currentSubjects = (course && faculty) ? (subjectsMap[`${faculty}_${course}`] || subjectsMap['default']) : [];
+
+    if (!course && !q) {
+        return res.render('library', {
+            books: [], user: req.session.user, search: q, courseFilter: null, facultyFilter: null, subjectFilter: null,
+            faculties: tatuFaculties, courses: courses, subjects: [], viewMode: 'courses'
+        });
+    }
+
+    if (course && !faculty && !q) {
+        return res.render('library', {
+            books: [], user: req.session.user, search: q, courseFilter: course, facultyFilter: null, subjectFilter: null,
+            faculties: tatuFaculties, courses: courses, subjects: [], viewMode: 'faculties'
+        });
+    }
+
+    if (course && faculty && !subject && !q && currentSubjects.length > 0) {
+        return res.render('library', {
+            books: [], user: req.session.user, search: q, courseFilter: course, facultyFilter: faculty, subjectFilter: null,
+            faculties: tatuFaculties, courses: courses, subjects: currentSubjects, viewMode: 'subjects'
+        });
+    }
+
+    db.all(sql, params, (err, books) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send("Server Error");
+        }
+        res.render('library', {
+            books, user: req.session.user, search: q, courseFilter: course, facultyFilter: faculty, subjectFilter: subject,
+            faculties: tatuFaculties, courses: courses, subjects: currentSubjects, viewMode: 'books'
+        });
+    });
+});
+
+// Download Book
+router.get('/download/:id', isAuthenticated, (req, res) => {
+
+    const bookId = req.params.id;
+    db.get("SELECT filepath FROM books WHERE id = ?", [bookId], (err, row) => {
+        if (err || !row) {
+            return res.status(404).send("Kitob topilmadi");
+        }
+        // Change backslashes to forward slashes for cross-platform compatibility if needed, 
+        // but path.join handles OS specifics usually.
+        // However, we stored relative path. 
+        res.download(row.filepath);
+    });
+});
+
+module.exports = router;
