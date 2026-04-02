@@ -26,10 +26,9 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Add Book (stores filename only — for Vercel, file upload to Cloudinary recommended)
+// Add Book
 router.post('/add', upload.single('bookFile'), async (req, res) => {
     const { title, author, subject, faculty, course, description } = req.body;
-    // On Vercel, file is in memory (req.file.buffer). We store just the filename as placeholder.
     const filepath = req.file ? req.file.originalname : null;
 
     if (!filepath) {
@@ -38,7 +37,7 @@ router.post('/add', upload.single('bookFile'), async (req, res) => {
 
     try {
         await db.run(
-            `INSERT INTO books (title, author, subject, faculty, course, description, filepath) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO books (title, author, subject, faculty, course, description, filepath) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [title, author, subject, faculty, course, description, filepath]
         );
         res.redirect('/admin');
@@ -51,7 +50,7 @@ router.post('/add', upload.single('bookFile'), async (req, res) => {
 // Delete Book
 router.post('/delete/:id', async (req, res) => {
     try {
-        await db.run("DELETE FROM books WHERE id = ?", [req.params.id]);
+        await db.run("DELETE FROM books WHERE id = $1", [req.params.id]);
         res.redirect('/admin');
     } catch (err) {
         console.error(err);
@@ -64,7 +63,7 @@ router.post('/edit/:id', async (req, res) => {
     const { title, author, subject, description } = req.body;
     try {
         await db.run(
-            "UPDATE books SET title = ?, author = ?, subject = ?, description = ? WHERE id = ?",
+            "UPDATE books SET title = $1, author = $2, subject = $3, description = $4 WHERE id = $5",
             [title, author, subject, description, req.params.id]
         );
         res.redirect('/admin');
