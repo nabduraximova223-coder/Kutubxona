@@ -23,8 +23,9 @@ router.get('/library', isAuthenticated, async (req, res) => {
         params.push(parseInt(course));
     }
     if (faculty) {
-        sql += ` AND faculty = $${pCount++}`;
+        sql += ` AND (faculty = $${pCount} OR faculty = 'all')`;
         params.push(faculty);
+        pCount++;
     }
     if (subject) {
         sql += ` AND subject = $${pCount++}`;
@@ -55,6 +56,10 @@ router.get('/library', isAuthenticated, async (req, res) => {
         'kt_1': ["O'zbekistonning eng yangi tarixi", "Ingliz tili", "Hisob(Calculus)", "Fizika", "Dasturlash", "Akademik yozuv", "Falsafa", "Dinshunoslik", "Diskret tuzilmalar", "Differentsial tenglamalar"],
         'kt_2': ["Ma'lumotlar tuzilmasi va algoritmlar", "Ma'lumotlar bazasi", "Kompyuterni tashkil etish", "Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Veb ilovalar yaratish", "Sun'iy intellekt asoslari", "Masofaviy ta'lim texnologiyalari", "Kompyuter tarmoqlari", "Ehtimollar va statistika"],
         'kt_3': ["Ta'lim nazariyasi", "Ta'limga kirish", "Operatsion tizimlar", "Jismoniy madaniyat va sport", "Elektron pedagogika", "Raqamli texnologiya va innovatsiyalar", "Pedagogika. Psixologiya", "O'rnatilgan tizimlar", "Kreativ pedagogika"],
+        'di_1': ["O'zbekistonning eng yangi tarixi", "Umumiy psixologiya", "Informatikaning nazariy asoslari", "Chiziqli algebra va analitik geometriya", "Diskret matematika va matematik mantiq", "Matematik analiz", "Algoritm tillari va dasturlash", "Mediasavodxonlik va axborot madaniyati"],
+        'di_2': ["Falsafa", "Umumiy pedagogika", "Umumiy fizika", "Differensial tenglamalar", "Dinshunoslik"],
+        'di_3': ["Funksional analiz", "Sonli usullar", "Matematik fizika tenglamalari", "Matematik modellashtirish", "Jarayonlar tadqiqoti va optimal boshqaruv", "Matematika va informatika o'qitish metodikasi"],
+        'di_4': ["Kompyuterli matematik tizimlar", "Inklyuziv ta'lim", "Gospital pedagogika", "Kompleks o'zgaruvchili funksiyalar nazariyasi"],
         'default': ["Mutaxassislikka kirish", "Xorijiy til", "Oliy matematika", "Fizika", "Axborot texnologiyalari", "Sotsiologiya"]
     };
 
