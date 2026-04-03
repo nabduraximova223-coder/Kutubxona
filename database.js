@@ -41,7 +41,7 @@ async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const existing = await pool.query("SELECT * FROM users WHERE username = 'admin'");
     if (existing.rows.length === 0) {
         const hash = bcrypt.hashSync('admin123', 10);
