@@ -9,6 +9,9 @@ const isAuthenticated = (req, res, next) => {
 
 router.get('/library', isAuthenticated, async (req, res) => {
     const { q, faculty, course, subject } = req.query;
+    console.log('--- Library Route DEBUG ---');
+    console.log('Query:', { q, faculty, course, subject });
+
     let sql = "SELECT * FROM books WHERE 1=1";
     let params = [];
     let pCount = 1;
@@ -53,17 +56,36 @@ router.get('/library', isAuthenticated, async (req, res) => {
         'ki_1': ["Ingliz tili", "Hisob (Calculus)", "Fizika", "Falsafa", "Dinshunoslik", "Dasturlash", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar", "Differentsial tenglamalar", "Akademik yozuv"],
         'ki_2': ["Sun'iy intellekt asoslari", "Ma'lumotlar tuzilmasi va algoritmlar", "Kompyuterni tashkil etish", "Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Veb ilovalar yaratish", "Ma'lumotlar bazasi", "Kompyuter tarmoqlari", "Ehtimollar va statistika", "Amaliy intellektual tizimlar"],
         'ki_3': ["Operatsion tizimlar", "Moliyaviy savodxonlik asoslari", "Inson kompyuter interfeysi", "Bulutli hisoblash", "Bilimlar bazasini loyihalash", "O'rnatilgan tizimlar", "Machine learning", "Jismoniy madaniyat va sport", "IoT: tizimlar va ilovalar"],
+        'ki_4': ["1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
         'kt_1': ["O'zbekistonning eng yangi tarixi", "Ingliz tili", "Hisob(Calculus)", "Fizika", "Dasturlash", "Akademik yozuv", "Falsafa", "Dinshunoslik", "Diskret tuzilmalar", "Differentsial tenglamalar"],
         'kt_2': ["Ma'lumotlar tuzilmasi va algoritmlar", "Ma'lumotlar bazasi", "Kompyuterni tashkil etish", "Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Veb ilovalar yaratish", "Sun'iy intellekt asoslari", "Masofaviy ta'lim texnologiyalari", "Kompyuter tarmoqlari", "Ehtimollar va statistika"],
         'kt_3': ["Ta'lim nazariyasi", "Ta'limga kirish", "Operatsion tizimlar", "Jismoniy madaniyat va sport", "Elektron pedagogika", "Raqamli texnologiya va innovatsiyalar", "Pedagogika. Psixologiya", "O'rnatilgan tizimlar", "Kreativ pedagogika"],
+        'kt_4': ["1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
         'di_1': ["O'zbekistonning eng yangi tarixi", "Umumiy psixologiya", "Informatikaning nazariy asoslari", "Chiziqli algebra va analitik geometriya", "Diskret matematika va matematik mantiq", "Matematik analiz", "Algoritm tillari va dasturlash", "Mediasavodxonlik va axborot madaniyati"],
         'di_2': ["Falsafa", "Umumiy pedagogika", "Umumiy fizika", "Differensial tenglamalar", "Dinshunoslik"],
         'di_3': ["Funksional analiz", "Sonli usullar", "Matematik fizika tenglamalari", "Matematik modellashtirish", "Jarayonlar tadqiqoti va optimal boshqaruv", "Matematika va informatika o'qitish metodikasi"],
-        'di_4': ["Kompyuterli matematik tizimlar", "Inklyuziv ta'lim", "Gospital pedagogika", "Kompleks o'zgaruvchili funksiyalar nazariyasi"],
+        'di_4': ["Kompyuterli matematik tizimlar", "Inklyuziv ta'lim", "Gospital pedagogika", "Kompleks o'zgaruvchili funksiyalar nazariyasi", "1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
+        'tv_1': ["Dasturlash", "Fizika", "Hisob (Calculus)", "Ingliz tili", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar", "Differentsial tenglamalar", "Falsafa", "Dinshunoslik"],
+        'tv_2': ["Kiberxavfsizlik asoslari", "Elektronika va sxemalar", "Sun'iy intellekt asoslari"],
+        'tv_3': ["Energomenedjment", "Hayot faoliyati xavfsizligi", "Raqamli o'lchov qurilmalari va axborot-boshqaruv tizimlari"],
+        'tv_4': ["1-Mutaxassislik tanlov fani", "2-Mutaxassislik tanlov fani", "1-IT tanlov fani", "2-IT tanlov fani", "1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
+        'ax_1': ["Akademik yozuv", "Dasturlash", "Fizika", "Hisob (Calculus)", "Ingliz tili", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar", "Differentsial tenglamalar", "Falsafa", "Dinshunoslik"],
+        'ax_2': ["Ma'lumotlar bazasi", "Kiberxavfsizlik asoslari", "Ma'lumotlar tuzilmasi va algoritmlar", "Elektronika va sxemalar", "Kompyuter tarmoqlari", "Server administration"],
+        'ax_3': ["Operatsion tizimlar", "Ochiq kodli OT xavfsizligi", "O'rnatilgan tizimlar", "Tarmoq xavfsizligi"],
+        'ax_4': ["1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
+        'im_1': ["Akademik yozuv", "Dasturlash", "Fizika", "Hisob (Calculus)", "Ingliz tili", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar", "Differentsial tenglamalar", "Iqtisodiyot nazariyasi", "Falsafa", "Dinshunoslik"],
+        'im_2': ["Ma'lumotlar bazasi", "Kiberxavfsizlik asoslari", "Mikroiqtisodiyot", "Buxgalteriya hisobi va tamoyillari", "Statistika", "Sun'iy intellekt asoslari", "Pul, kredit, Banklar"],
+        'im_3': ["Amaliy ekonometrika", "Operatsion tizimlar", "Iqtisodiy xavfsizlik", "Pedagogika. Psixologiya", "Moliya bozorlari"],
+        'im_4': ["1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
+        'tt_1': ["Akademik yozuv", "Dasturlash", "Fizika", "Hisob(Calculus)", "Ingliz tili", "O'zbekistonning eng yangi tarixi", "Diskret tuzilmalar", "Differentsial tenglamalar", "Falsafa", "Dinshunoslik"],
+        'tt_2': ["Kiberxavfsizlik asoslari", "Ma'lumotlar tuzilmasi va algoritmlar", "Elektronika va sxemalar", "Ehtimollar va statistika", "Muhandislik grafikasi", "Radioelektronikaning nazariy asoslari", "Raqamli aloqa", "Sun'iy intellekt asoslari"],
+        'tt_3': ["Raqamli qurilmalarni loyihalash", "Tasvirlarni qayta ishlash", "Pedagogika. Psixologiya", "Simsiz tarmoqlar", "O'rnatilgan boshqaruv tizimlar"],
+        'tt_4': ["1-Mutaxassislik fani", "2-Mutaxassislik fani", "3-Mutaxassislik fani", "4-Mutaxassislik fani"],
         'default': ["Mutaxassislikka kirish", "Xorijiy til", "Oliy matematika", "Fizika", "Axborot texnologiyalari", "Sotsiologiya"]
     };
 
     const currentSubjects = (course && faculty) ? (subjectsMap[`${faculty}_${course}`] || subjectsMap['default']) : [];
+    console.log(`Key: ${faculty}_${course}, Found: ${currentSubjects.length} subjects`);
 
     if (!course && !q) {
         return res.render('library', { books: [], user: req.session.user, search: q, courseFilter: null, facultyFilter: null, subjectFilter: null, faculties: tatuFaculties, courses, subjects: [], viewMode: 'courses' });
@@ -93,6 +115,25 @@ router.get('/download/:id', isAuthenticated, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send("Server Error");
+    }
+});
+
+// Read Book
+router.get('/read/:id', isAuthenticated, async (req, res) => {
+    try {
+        const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
+        if (!row) return res.status(404).send("Kitob topilmadi");
+
+        const absolutePath = require('path').resolve(row.filepath);
+        res.sendFile(absolutePath, {
+            headers: {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': `inline; filename="${encodeURIComponent(row.filepath)}"`
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error: " + err.message);
     }
 });
 
