@@ -24,8 +24,17 @@ async function createTables() {
         course INTEGER,
         description TEXT,
         filepath VARCHAR(255),
+        rating_sum INTEGER DEFAULT 0,
+        rating_count INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    try {
+        await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_sum INTEGER DEFAULT 0`);
+        await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0`);
+    } catch (e) {
+        // Ignore if unsupported or already exists
+    }
 
     await pool.query(`CREATE TABLE IF NOT EXISTS chats (
         id SERIAL PRIMARY KEY,
