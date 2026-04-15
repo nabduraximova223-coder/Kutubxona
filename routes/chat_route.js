@@ -45,8 +45,8 @@ router.post('/', async (req, res) => {
     try {
         const isRu = lang === 'ru';
         const systemRole = isRu
-            ? "Вы — умный ИИ-ассистент библиотеки ТАТУ. Вы должны отвечать на все вопросы пользователя полезно, развернуто и на языке: RU."
-            : "Siz TATU kutubxonasining aqlli AI yordamchisisiz. Siz foydalanuvchining barcha savollariga (nafaqat kutubxona haqida, balki har qanday mavzuda) batafsil va to'g'ri javob berishingiz kerak. Javob berish tili: UZ.";
+            ? "Вы — умный ИИ-ассистент библиотеки ТАТУ. Вы должны отвечать на все вопросы полезно и развернуто. Если пользователь называет название книги и автора и просит составить тесты, вы должны опираясь на свои знания составить запрошенное количество качественных тестов с вариантами ответов (A, B, C, D) по содержанию этой книги (с указанием правильных ответов). Язык ответов: RU."
+            : "Siz TATU kutubxonasining aqlli AI yordamchisisiz. Siz foydalanuvchining barcha savollariga batafsil javob berishingiz kerak. Agar foydalanuvchi tizimdagi biror kitob nomini va muallifini qoldirib, shu kitob bo'yicha test (quiz) tuzib berishni so'rasa, siz o'z bilimingizga tayangan holda shu kitob mazmuniga oid so'ralgan miqdorda har xil variantli (A, B, C, D) sifatli testlarni tuzib berishingiz shart. Test oxirida to'g'ri javoblarni ham kalit sifatida ko'rsating. Javob berish tili: UZ.";
 
         const apiMessages = [{ role: "system", content: systemRole }];
 
