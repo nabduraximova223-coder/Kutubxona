@@ -100,8 +100,26 @@
                                     <% books.forEach(book=> { %>
                                         <div class="book-card">
                                             <div class="book-info">
-                                                <h3 class="book-title">
-                                                    <%= book.title %>
+                                                <h3 class="book-title"
+                                                    style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 0.5rem;">
+                                                    <span style="flex: 1;">
+                                                        <%= book.title %>
+                                                    </span>
+                                                    <div class="book-rating" data-book-id="<%= book.id %>"
+                                                        data-original-rating="<%= (book.rating_count > 0 ? (book.rating_sum / book.rating_count) : 0).toFixed(1) %>"
+                                                        style="display: flex; gap: 3px; cursor: pointer; white-space: nowrap;">
+                                                        <% const count=book.rating_count || 0; const sum=book.rating_sum
+                                                            || 0; const avg=count> 0 ? (sum / count) : 0;
+                                                            for(let i=1; i<=5; i++) { const isFilled=i
+                                                                <=Math.round(avg); %>
+                                                                <i class="<%= isFilled ? 'fas' : 'far' %> fa-star"
+                                                                    data-rating="<%= i %>"
+                                                                    style="color: #FFD700; font-size: 1.1rem;"></i>
+                                                                <% } %>
+                                                                    <span
+                                                                        style="font-size: 0.85rem; color: var(--text-muted); margin-left: 5px; align-self: center;">(
+                                                                        <%= avg.toFixed(1) %>)</span>
+                                                    </div>
                                                 </h3>
                                                 <p class="book-author"><i class="fas fa-user-edit"></i>
                                                     <%= book.author %>
@@ -109,11 +127,17 @@
                                                 <p class="book-desc">
                                                     <%= book.description %>
                                                 </p>
-                                                <div style="margin-top: 1.5rem;">
+                                                <div style="margin-top: 1.5rem; display: flex; gap: 10px;">
                                                     <a href="/download/<%= book.id %>" class="btn btn-primary"
-                                                        style="width: 100%; text-align: center;">
-                                                        <i class="fas fa-file-pdf"></i>
+                                                        style="flex: 1; text-align: center; padding: 0.5rem 1rem;">
+                                                        <i class="fas fa-file-pdf" style="margin-right: 5px;"></i>
                                                         <%= locals.t ? locals.t('download') : 'Yuklab olish' %>
+                                                    </a>
+                                                    <a href="/read/<%= book.id %>" target="_blank"
+                                                        class="btn btn-primary"
+                                                        style="flex: 1; text-align: center; padding: 0.5rem 1rem; background-color: var(--secondary-color, #4CAF50); border: none;">
+                                                        <i class="fas fa-book-open" style="margin-right: 5px;"></i>
+                                                        <%= locals.t ? locals.t('open_book') : 'O\' qish' %>
                                                     </a>
                                                 </div>
                                             </div>
@@ -138,4 +162,64 @@
                         <% } %>
     </div>
 
+    <script>
+        document.querySelectorAll('.book-rating').forEach(container => {
+            const stars = container.querySelectorAll('i.fa-star');
+            const originalRating = Math.round(parseFloat(container.getAttribute('data-original-rating') || 0));
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    stars.forEach(s => {
+                        const sRating = parseInt(s.getAttribute('data-rating'));
+                        if (sRating <= rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.add('far');
+                            s.classList.remove('fas');
+                        }
+                    });
+                });
+            });
+
+            container.addEventListener('mouseleave', function () {
+                stars.forEach(s => {
+                    const sRating = parseInt(s.getAttribute('data-rating'));
+                    if (sRating <= originalRating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.add('far');
+                        s.classList.remove('fas');
+                    }
+                });
+            });
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    const bookId = container.getAttribute('data-book-id');
+
+                    fetch('/rate/' + bookId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rating: rating })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert("Baholashda xatolik yuz berdi");
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert("Server xatosi yuz berdi");
+                        });
+                });
+            });
+        });
+    </script>
     <%- include('partials/footer') %>
