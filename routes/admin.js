@@ -3,9 +3,25 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const db = require('../database');
+const fs = require('fs');
 
-// Multer Setup — memory storage (Vercel has no persistent disk)
-const upload = multer({ storage: multer.memoryStorage() });
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer Setup — fallback to disk if local, but since they need it working, we explicitly save it
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // unique filename
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Admin Middleware
 function isAdmin(req, res, next) {
@@ -29,7 +45,8 @@ router.get('/', async (req, res) => {
 // Add Book
 router.post('/add', upload.single('bookFile'), async (req, res) => {
     const { title, author, subject, faculty, course, description } = req.body;
-    const filepath = req.file ? req.file.originalname : null;
+    // Save the relative path like 'uploads/filename.pdf'
+    const filepath = req.file ? 'uploads/' + req.file.filename : null;
 
     if (!filepath) {
         return res.send("Fayl yuklanmadi");
