@@ -13,12 +13,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Cookie-Session (works on Vercel serverless)
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(cookieSession({
     name: 'session',
-    secret: process.env.SESSION_SECRET || 'tatu_library_secret_key',
+    keys: [process.env.SESSION_SECRET || 'tatu_library_secret_key'],
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    secure: false,
-    httpOnly: true
+    secure: isProduction,   // HTTPS (Vercel) da true bo'ladi
+    httpOnly: true,
+    sameSite: isProduction ? 'none' : 'lax'
 }));
 
 // Session save compatibility shim
