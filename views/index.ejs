@@ -17,14 +17,6 @@
             <a href="/register" class="btn">
                 <%= locals.t ? locals.t('register') : 'Ro\' yxatdan o\'tish' %>
             </a>
-            <% if (locals.user) { %>
-                <a href="/library" class="btn">
-                    <%= locals.t ? locals.t('books') : 'Kitoblar' %>
-                </a>
-                <a href="/logout" class="btn">
-                    <%= locals.t ? locals.t('logout') : 'Chiqish' %>
-                </a>
-                <% } %>
         </div>
     </div>
 
