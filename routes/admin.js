@@ -4,24 +4,10 @@ const multer = require('multer');
 const path = require('path');
 const db = require('../database');
 const fs = require('fs');
+const { put } = require('@vercel/blob');
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer Setup — fallback to disk if local, but since they need it working, we explicitly save it
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + path.extname(file.originalname)); // unique filename
-    }
-});
-
-const upload = multer({ storage: storage });
+// Vercel Blob Upload Middleware
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Admin Middleware
 function isAdmin(req, res, next) {
@@ -45,14 +31,21 @@ router.get('/', async (req, res) => {
 // Add Book
 router.post('/add', upload.single('bookFile'), async (req, res) => {
     const { title, author, subject, faculty, course, description } = req.body;
-    // Save the relative path like 'uploads/filename.pdf'
-    const filepath = req.file ? 'uploads/' + req.file.filename : null;
-
-    if (!filepath) {
-        return res.send("Fayl yuklanmadi");
-    }
+    let filepath = null;
 
     try {
+        if (req.file) {
+            const { url } = await put(req.file.originalname, req.file.buffer, {
+                access: 'public',
+                token: process.env.BLOB_READ_WRITE_TOKEN
+            });
+            filepath = url;
+        }
+
+        if (!filepath) {
+            return res.send("Fayl yuklanmadi");
+        }
+
         await db.run(
             `INSERT INTO books (title, author, subject, faculty, course, description, filepath) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [title, author, subject, faculty, course, description, filepath]
