@@ -44,9 +44,39 @@ router.post('/', async (req, res) => {
 
     try {
         const isRu = lang === 'ru';
+        let userContext = "";
+
+        if (req.session && req.session.user) {
+            try {
+                const userProfile = await db.getRow("SELECT faculty, course FROM users WHERE id = $1", [req.session.user.id]);
+                const activities = await db.getAll(`
+                    SELECT b.title, b.author, a.action_type 
+                    FROM user_activity a 
+                    JOIN books b ON a.book_id = b.id 
+                    WHERE a.user_id = $1 
+                    ORDER BY a.created_at DESC LIMIT 10
+                `, [req.session.user.id]);
+
+                if (userProfile && (userProfile.faculty || userProfile.course)) {
+                    userContext += isRu
+                        ? `\nДанные пользователя: факультет ${userProfile.faculty || 'не указан'}, курс ${userProfile.course || 'не указан'}.`
+                        : `\nFoydalanuvchi ma'lumotlari: fakultet ${userProfile.faculty || 'aniqlanmagan'}, kurs ${userProfile.course || 'aniqlanmagan'}.`;
+                }
+
+                if (activities.length > 0) {
+                    const activityList = activities.map(a => `${a.title} (${a.author}) - ${a.action_type}`).join(', ');
+                    userContext += isRu
+                        ? `\nПоследние действия: ${activityList}.`
+                        : `\nOxirgi harakatlar: ${activityList}.`;
+                }
+            } catch (e) {
+                console.error("Context fetch error:", e);
+            }
+        }
+
         const systemRole = isRu
-            ? "Вы — умный ИИ-ассистент библиотеки ТАТУ. Вы должны отвечать на все вопросы полезно и развернуто. Если пользователь называет название книги и автора и просит составить тесты, вы должны опираясь на свои знания составить запрошенное количество качественных тестов с вариантами ответов (A, B, C, D) по содержанию этой книги (с указанием правильных ответов). Язык ответов: RU."
-            : "Siz TATU kutubxonasining aqlli AI yordamchisisiz. Siz foydalanuvchining barcha savollariga batafsil javob berishingiz kerak. Agar foydalanuvchi tizimdagi biror kitob nomini va muallifini qoldirib, shu kitob bo'yicha test (quiz) tuzib berishni so'rasa, siz o'z bilimingizga tayangan holda shu kitob mazmuniga oid so'ralgan miqdorda har xil variantli (A, B, C, D) sifatli testlarni tuzib berishingiz shart. Test oxirida to'g'ri javoblarni ham kalit sifatida ko'rsating. Javob berish tili: UZ.";
+            ? "Вы — умный ИИ-ассистент библиотеки ТАТУ. Вы должны отвечать на все вопросы полезно и развернуто. Если пользователь называет название книги и автора и просит составить тесты, вы должны опираясь на свои знания составить запрошенное количество качественных тестов с вариантами ответов (A, B, C, D) по содержанию этой книги (с указанием правильных ответов). Язык ответов: RU." + userContext
+            : "Siz TATU kutubxonasining aqlli AI yordamchisisiz. Siz foydalanuvchining barcha savollariga batafsil javob berishingiz kerak. Agar foydalanuvchi tizimdagi biror kitob nomini va muallifini qoldirib, shu kitob bo'yicha test (quiz) tuzib berishni so'rasa, siz o'z bilimingizga tayangan holda shu kitob mazmuniga oid so'ralgan miqdorda har xil variantli (A, B, C, D) sifatli testlarni tuzib berishingiz shart. Test oxirida to'g'ri javoblarni ham kalit sifatida ko'rsating. Javob berish tili: UZ." + userContext;
 
         const apiMessages = [{ role: "system", content: systemRole }];
 
