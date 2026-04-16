@@ -98,6 +98,11 @@ router.get('/library', isAuthenticated, async (req, res) => {
     }
 
     try {
+        if (faculty && course && req.session.user) {
+            // Passive profiling: update user faculty/course if browsing a specific section
+            await db.run("UPDATE users SET faculty = $1, course = $2 WHERE id = $3 AND (faculty IS NULL OR course IS NULL)", [faculty, parseInt(course), req.session.user.id]);
+        }
+
         const books = await db.getAll(sql, params);
         res.render('library', { books, user: req.session.user, search: q, courseFilter: course, facultyFilter: faculty, subjectFilter: subject, faculties: tatuFaculties, courses, subjects: currentSubjects, viewMode: 'books' });
     } catch (err) {
@@ -109,8 +114,11 @@ router.get('/library', isAuthenticated, async (req, res) => {
 // Download Book
 router.get('/download/:id', isAuthenticated, async (req, res) => {
     try {
-        const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
+        const row = await db.getRow("SELECT id, filepath FROM books WHERE id = $1", [req.params.id]);
         if (!row) return res.status(404).send("Kitob topilmadi");
+
+        // Log activity
+        await db.run("INSERT INTO user_activity (user_id, book_id, action_type) VALUES ($1, $2, 'download')", [req.session.user.id, row.id]);
 
         if (row.filepath.startsWith('http')) {
             return res.redirect(row.filepath);
@@ -126,8 +134,11 @@ router.get('/download/:id', isAuthenticated, async (req, res) => {
 // Read Book
 router.get('/read/:id', isAuthenticated, async (req, res) => {
     try {
-        const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
+        const row = await db.getRow("SELECT id, filepath FROM books WHERE id = $1", [req.params.id]);
         if (!row) return res.status(404).send("Kitob topilmadi");
+
+        // Log activity
+        await db.run("INSERT INTO user_activity (user_id, book_id, action_type) VALUES ($1, $2, 'view')", [req.session.user.id, row.id]);
 
         if (row.filepath.startsWith('http')) {
             return res.redirect(row.filepath);
