@@ -11,21 +11,20 @@
             <%= locals.t ? locals.t('subtitle') : 'Elektron kitoblar va ilmiy resurslar platformasi' %>
         </p>
         <div class="welcome-actions">
-            <% if (!locals.user) { %>
-                <a href="/login" class="btn">
-                    <%= locals.t ? locals.t('login') : 'Kirish' %>
+            <a href="/login" class="btn">
+                <%= locals.t ? locals.t('login') : 'Kirish' %>
+            </a>
+            <a href="/register" class="btn">
+                <%= locals.t ? locals.t('register') : 'Ro\' yxatdan o\'tish' %>
+            </a>
+            <% if (locals.user) { %>
+                <a href="/library" class="btn">
+                    <%= locals.t ? locals.t('books') : 'Kitoblar' %>
                 </a>
-                <a href="/register" class="btn">
-                    <%= locals.t ? locals.t('register') : 'Ro\' yxatdan o\'tish' %>
+                <a href="/logout" class="btn">
+                    <%= locals.t ? locals.t('logout') : 'Chiqish' %>
                 </a>
-                <% } else { %>
-                    <a href="/library" class="btn">
-                        <%= locals.t ? locals.t('books') : 'Kitoblar' %>
-                    </a>
-                    <a href="/logout" class="btn">
-                        <%= locals.t ? locals.t('logout') : 'Chiqish' %>
-                    </a>
-                    <% } %>
+                <% } %>
         </div>
     </div>
 
