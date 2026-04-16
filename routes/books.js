@@ -111,6 +111,11 @@ router.get('/download/:id', isAuthenticated, async (req, res) => {
     try {
         const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
         if (!row) return res.status(404).send("Kitob topilmadi");
+
+        if (row.filepath.startsWith('http')) {
+            return res.redirect(row.filepath);
+        }
+
         res.download(row.filepath);
     } catch (err) {
         console.error(err);
@@ -123,6 +128,10 @@ router.get('/read/:id', isAuthenticated, async (req, res) => {
     try {
         const row = await db.getRow("SELECT filepath FROM books WHERE id = $1", [req.params.id]);
         if (!row) return res.status(404).send("Kitob topilmadi");
+
+        if (row.filepath.startsWith('http')) {
+            return res.redirect(row.filepath);
+        }
 
         const absolutePath = require('path').resolve(row.filepath);
         res.sendFile(absolutePath, {
