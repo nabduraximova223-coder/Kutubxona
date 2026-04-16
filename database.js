@@ -12,7 +12,9 @@ async function createTables() {
         email VARCHAR(255) UNIQUE,
         username VARCHAR(255) UNIQUE,
         password VARCHAR(255),
-        role VARCHAR(50) DEFAULT 'user'
+        role VARCHAR(50) DEFAULT 'user',
+        faculty VARCHAR(255),
+        course INTEGER
     )`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS books (
@@ -32,9 +34,19 @@ async function createTables() {
     try {
         await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_sum INTEGER DEFAULT 0`);
         await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS faculty VARCHAR(255)`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS course INTEGER`);
     } catch (e) {
         // Ignore if unsupported or already exists
     }
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS user_activity (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+        action_type VARCHAR(50), -- 'view', 'download'
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS chats (
         id SERIAL PRIMARY KEY,
