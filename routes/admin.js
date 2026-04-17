@@ -35,11 +35,10 @@ router.post('/add', upload.single('bookFile'), async (req, res) => {
 
     try {
         if (req.file) {
-            const { url } = await put(req.file.originalname, req.file.buffer, {
+            const fileName = Date.now() + "_" + req.file.originalname;
+            const { url } = await put(fileName, req.file.buffer, {
                 access: 'public',
-                token: process.env.BLOB_READ_WRITE_TOKEN,
-                addRandomSuffix: true,
-                allowOverwrite: true
+                token: process.env.BLOB_READ_WRITE_TOKEN
             });
             filepath = url;
         }
