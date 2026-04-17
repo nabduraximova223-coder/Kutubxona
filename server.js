@@ -20,7 +20,7 @@ app.use(cookieSession({
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     secure: isProduction,   // HTTPS (Vercel) da true bo'ladi
     httpOnly: true,
-    sameSite: isProduction ? 'none' : 'lax'
+    sameSite: 'lax'
 }));
 
 // Session save compatibility shim
