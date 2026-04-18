@@ -147,7 +147,6 @@ module.exports = {
         "Ingliz tili": "Английский язык",
         "Hisob(Calculus)": "Математический анализ (Calculus)",
         "Hisob (Calculus)": "Математический анализ (Calculus)",
-        "Akademik yozuv": "Академическое письмо",
         "Falsafa": "Философия",
         "Dinshunoslik": "Религиоведение",
         "Diskret tuzilmalar": "Дискретные структуры",
