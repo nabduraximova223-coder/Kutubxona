@@ -15,7 +15,6 @@ const booksToAdd = [
     { course: 1, faculty: 'ki', subject: "O'zbekistonning eng yangi tarixi", title: "O'zbekiston tarixi", author: "Tarix instituti", description: "Yangi tarix fanidan o'quv qo'llanma" },
     { course: 1, faculty: 'ki', subject: "Diskret tuzilmalar", title: "Discrete Mathematics", author: "Kenneth Rosen", description: "Diskret matematika va uning tatbiqlari" },
     { course: 1, faculty: 'ki', subject: "Differentsial tenglamalar", title: "Differential Equations", author: "Dennis Zill", description: "Differensial tenglamalar kursi" },
-    { course: 1, faculty: 'ki', subject: "Akademik yozuv", title: "Academic Writing for Engineers", author: "Jane Doe", description: "Akademik yozuv qoidalari" },
 
     // 2-kurs
     { course: 2, faculty: 'ki', subject: "Sun'iy intellekt asoslari", title: "Artificial Intelligence: A Modern Approach", author: "Stuart Russell", description: "Sun'iy intellekt asoslari" },
