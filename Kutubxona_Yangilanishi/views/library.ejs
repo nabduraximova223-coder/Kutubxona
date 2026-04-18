@@ -1,0 +1,262 @@
+<%- include('partials/header') %>
+
+    <div class="container">
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <% if (locals.courseFilter) { %>
+                <i class="fas fa-chevron-right"></i>
+                <a href="/library?course=<%= courseFilter %>">
+                    <%= locals.t ? locals.t('course_' + courseFilter) : courseFilter + '-kurs' %>
+                </a>
+                <% } %>
+                    <% if (locals.facultyFilter) { %>
+                        <i class="fas fa-chevron-right"></i>
+                        <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>">
+                            <%= (locals.t && locals.faculties) ? locals.t(faculties.find(f=> f.id ===
+                                facultyFilter)?.name_key) : facultyFilter %>
+                        </a>
+                        <% } %>
+                            <% if (locals.subjectFilter) { %>
+                                <i class="fas fa-chevron-right"></i>
+                                <span>
+                                    <%= locals.t ? locals.t(subjectFilter) : subjectFilter %>
+                                </span>
+                                <% } %>
+        </div>
+
+        <% if (locals.viewMode==='courses' ) { %>
+            <!-- Step 1: Course Selection -->
+            <h2 class="section-title">
+                <%= locals.t ? locals.t('select_course') : 'Kursni tanlang' %>
+            </h2>
+            <div class="course-grid">
+                <% courses.forEach(course=> { %>
+                    <a href="/library?course=<%= course.id %>" class="course-card">
+                        <i class="fas <%= course.icon %>"></i>
+                        <span>
+                            <%= locals.t ? locals.t(course.name_key) : course.name_key %>
+                        </span>
+                    </a>
+                    <% }) %>
+            </div>
+
+            <% } else if (locals.viewMode==='faculties' ) { %>
+                <!-- Step 2: Faculty Selection -->
+                <h2 class="section-title">
+                    <%= locals.t ? locals.t('select_faculty') : 'Fakultetni tanlang' %>
+                </h2>
+                <div class="faculty-grid">
+                    <% faculties.forEach(faculty=> { %>
+                        <a href="/library?course=<%= courseFilter %>&faculty=<%= faculty.id %>" class="faculty-card">
+                            <i class="fas <%= faculty.icon %>"></i>
+                            <span>
+                                <%= locals.t ? locals.t(faculty.name_key) : faculty.name_key %>
+                            </span>
+                        </a>
+                        <% }) %>
+                </div>
+
+                <% } else if (locals.viewMode==='subjects' ) { %>
+                    <!-- Step 3: Subject Selection -->
+                    <h2 class="section-title">
+                        Fanlarni tanlang
+                    </h2>
+                    <div class="subject-grid">
+                        <% subjects.forEach(subject=> { %>
+                            <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>&subject=<%= subject %>"
+                                class="subject-card">
+                                <i class="fas fa-book"></i>
+                                <span>
+                                    <%= locals.t ? locals.t(subject) : subject %>
+                                </span>
+                            </a>
+                            <% }) %>
+                    </div>
+
+                    <% } else if (locals.viewMode==='books' ) { %>
+                        <!-- Step 3: Book Listing -->
+                        <div class="content-wrapper">
+                            <div class="main-content">
+                                <div class="books-view">
+                                    <div class="view-header" style="justify-content: space-between;">
+                                        <h2>
+                                            <i class="fas fa-layer-group"></i>
+                                            <%= locals.t ? locals.t('books') : 'Kitoblar' %>
+                                        </h2>
+                                        <div class="search-compact">
+                                            <form action="/library" method="GET" style="display: flex; gap: 10px;">
+                                                <input type="hidden" name="course" value="<%= courseFilter %>">
+                                                <input type="hidden" name="faculty" value="<%= facultyFilter %>">
+                                                <input type="text" name="q"
+                                                    placeholder="<%= locals.t ? locals.t('search') : 'Qidirish...' %>"
+                                                    value="<%= locals.search || '' %>"
+                                                    style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                                                <button type="submit" class="btn btn-primary"
+                                                    style="padding: 0.5rem 1rem;"><i class="fas fa-search"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                    <div class="book-grid">
+                                        <% if (locals.books && books.length> 0) { %>
+                                            <% books.forEach(book=> { %>
+                                                <div class="book-card">
+                                                    <div class="book-info">
+                                                        <h3 class="book-title"
+                                                            style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 0.5rem;">
+                                                            <span style="flex: 1;">
+                                                                <%= book.title %>
+                                                            </span>
+                                                            <div class="book-rating" data-book-id="<%= book.id %>"
+                                                                data-original-rating="<%= (book.rating_count > 0 ? (book.rating_sum / book.rating_count) : 0).toFixed(1) %>"
+                                                                style="display: flex; gap: 3px; cursor: pointer; white-space: nowrap;">
+                                                                <% const count=book.rating_count || 0; const
+                                                                    sum=book.rating_sum || 0; const avg=count> 0 ? (sum
+                                                                    / count) : 0;
+                                                                    for(let i=1; i<=5; i++) { const isFilled=i
+                                                                        <=Math.round(avg); %>
+                                                                        <i class="<%= isFilled ? 'fas' : 'far' %> fa-star"
+                                                                            data-rating="<%= i %>"
+                                                                            style="color: #FFD700; font-size: 1.1rem;"></i>
+                                                                        <% } %>
+                                                                            <span
+                                                                                style="font-size: 0.85rem; color: var(--text-muted); margin-left: 5px; align-self: center;">(
+                                                                                <%= avg.toFixed(1) %>)
+                                                                            </span>
+                                                            </div>
+                                                        </h3>
+                                                        <p class="book-author"><i class="fas fa-user-edit"></i>
+                                                            <%= book.author %>
+                                                        </p>
+                                                        <p class="book-desc">
+                                                            <%= book.description %>
+                                                        </p>
+                                                        <div style="margin-top: 1.5rem; display: flex; gap: 10px;">
+                                                            <a href="/download/<%= book.id %>" class="btn btn-primary"
+                                                                style="flex: 1; text-align: center; padding: 0.5rem 1rem;">
+                                                                <i class="fas fa-file-pdf"
+                                                                    style="margin-right: 5px;"></i>
+                                                                <%= locals.t ? locals.t('download') : 'Yuklab olish' %>
+                                                            </a>
+                                                            <a href="/read/<%= book.id %>" target="_blank"
+                                                                class="btn btn-primary"
+                                                                style="flex: 1; text-align: center; padding: 0.5rem 1rem; background-color: var(--secondary-color, #4CAF50); border: none;">
+                                                                <i class="fas fa-book-open"
+                                                                    style="margin-right: 5px;"></i>
+                                                                <%= locals.t ? locals.t('open_book') : 'O\' qish' %>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% }) %>
+                                                    <% } else { %>
+                                                        <div class="no-results"
+                                                            style="grid-column: 1/-1; text-align: center; padding: 4rem; background: #fff; border-radius: 16px; border: 1px dashed var(--border-color);">
+                                                            <i class="fas fa-search"
+                                                                style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                                                            <p>
+                                                                <%= locals.t ? locals.t('not_found')
+                                                                    : 'Kitoblar topilmadi' %>
+                                                            </p>
+                                                            <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>"
+                                                                class="btn btn-outline" style="margin-top: 1rem;">
+                                                                <%= locals.t ? locals.t('clear') : 'Tozalash' %>
+                                                            </a>
+                                                        </div>
+                                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sidebar">
+                                <h2 class="section-title" style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+                                    <i class="fas fa-video"></i>
+                                    <%= locals.t ? locals.t('videos') : 'Videolar' %>
+                                </h2>
+                                <div class="video-list">
+                                    <% if (locals.videos && locals.videos.length> 0) { %>
+                                        <% locals.videos.forEach(video=> { %>
+                                            <div class="video-card" style="margin-bottom: 1rem;">
+                                                <a href="<%= video.url %>" target="_blank">
+                                                    <i class="fas fa-play-circle" style="margin-right: 8px;"></i>
+                                                    <%= video.title %>
+                                                </a>
+                                            </div>
+                                            <% }) %>
+                                                <% } else { %>
+                                                    <div
+                                                        style="text-align: center; padding: 2rem 0; border: 1px dashed var(--border-color); border-radius: 8px;">
+                                                        <i class="fas fa-film"
+                                                            style="font-size: 2rem; color: var(--border-color); margin-bottom: 1rem;"></i>
+                                                        <p style="color: var(--text-muted); font-size: 0.95rem;">
+                                                            <%= locals.t ? locals.t('no_videos')
+                                                                : 'Ushbu fanga oid videolar tez orada qo\' shiladi' %>
+                                                        </p>
+                                                    </div>
+                                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+    </div>
+
+    <script>
+        document.querySelectorAll('.book-rating').forEach(container => {
+            const stars = container.querySelectorAll('i.fa-star');
+            const originalRating = Math.round(parseFloat(container.getAttribute('data-original-rating') || 0));
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    stars.forEach(s => {
+                        const sRating = parseInt(s.getAttribute('data-rating'));
+                        if (sRating <= rating) {
+                            s.classList.remove('far');
+                            s.classList.add('fas');
+                        } else {
+                            s.classList.add('far');
+                            s.classList.remove('fas');
+                        }
+                    });
+                });
+            });
+
+            container.addEventListener('mouseleave', function () {
+                stars.forEach(s => {
+                    const sRating = parseInt(s.getAttribute('data-rating'));
+                    if (sRating <= originalRating) {
+                        s.classList.remove('far');
+                        s.classList.add('fas');
+                    } else {
+                        s.classList.add('far');
+                        s.classList.remove('fas');
+                    }
+                });
+            });
+
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    const bookId = container.getAttribute('data-book-id');
+
+                    fetch('/rate/' + bookId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rating: rating })
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert("Baholashda xatolik yuz berdi");
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert("Server xatosi yuz berdi");
+                        });
+                });
+            });
+        });
+    </script>
+    <%- include('partials/footer') %>
