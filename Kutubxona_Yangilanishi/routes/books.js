@@ -172,4 +172,30 @@ router.get('/read/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+// Rate Book
+router.post('/rate/:id', isAuthenticated, async (req, res) => {
+    try {
+        const rating = parseInt(req.body.rating);
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ success: false, message: "Noto'g'ri baho" });
+        }
+
+        const bookId = req.params.id;
+        const row = await db.getRow("SELECT id FROM books WHERE id = $1", [bookId]);
+        if (!row) {
+            return res.status(404).json({ success: false, message: "Kitob topilmadi" });
+        }
+
+        await db.run("UPDATE books SET rating_sum = COALESCE(rating_sum, 0) + $1, rating_count = COALESCE(rating_count, 0) + 1 WHERE id = $2", [rating, bookId]);
+
+        // Activity log
+        await db.run("INSERT INTO user_activity (user_id, book_id, action_type) VALUES ($1, $2, 'rate')", [req.session.user.id, bookId]);
+
+        res.json({ success: true, message: "Baho qabul qilindi" });
+    } catch (err) {
+        console.error("Rate book error:", err);
+        res.status(500).json({ success: false, message: "Server xatosi" });
+    }
+});
+
 module.exports = router;
