@@ -6,11 +6,12 @@ const { sendOTP } = require('../utils/email');
 
 // Public Landing Page
 router.get('/', (req, res) => {
-    res.render('index', { user: req.session.user });
+    res.render('index', { user: req.session.user, isLandingPage: true });
 });
 
 // Register Page (Step 1: Email)
 router.get('/register', (req, res) => {
+    if (req.session && req.session.user) return res.redirect('/library');
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
     req.session.challenge = {
@@ -50,7 +51,10 @@ router.post('/register', async (req, res) => {
     try {
         const row = await db.getRow("SELECT * FROM users WHERE email = $1", [email]);
         if (row) {
-            return res.render('register', { error: "Bu email allaqachon ro'yxatdan o'tgan" });
+            return res.render('register', {
+                error: "Bu email allaqachon ro'yxatdan o'tgan",
+                challenge: req.session.challenge ? req.session.challenge.question : ""
+            });
         }
 
         req.session.registration = { email: email, step: 'complete' };
@@ -63,6 +67,7 @@ router.post('/register', async (req, res) => {
 
 // Verify OTP Page
 router.get('/verify-otp', (req, res) => {
+    if (req.session && req.session.user) return res.redirect('/library');
     if (!req.session.registration || req.session.registration.step !== 'verify') {
         return res.redirect('/register');
     }
@@ -91,6 +96,7 @@ router.post('/verify-otp', (req, res) => {
 
 // Complete Registration Page
 router.get('/complete-register', (req, res) => {
+    if (req.session && req.session.user) return res.redirect('/library');
     if (!req.session.registration || req.session.registration.step !== 'complete') {
         return res.redirect('/register');
     }
@@ -133,7 +139,8 @@ router.post('/complete-register', async (req, res) => {
 
 // Login Page
 router.get('/login', (req, res) => {
-    res.render('login', { user: req.session.user });
+    if (req.session && req.session.user) return res.redirect('/library');
+    res.render('login', { user: null });
 });
 
 // Login Logic
