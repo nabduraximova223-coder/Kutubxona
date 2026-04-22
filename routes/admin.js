@@ -22,7 +22,7 @@ router.use(isAdmin);
 router.get('/', async (req, res) => {
     try {
         const books = await db.getAll("SELECT * FROM books ORDER BY created_at DESC", []);
-        const users = await db.getAll("SELECT id, login, role, created_at FROM users ORDER BY created_at DESC", []);
+        const users = await db.getAll("SELECT id, username, role, created_at FROM users ORDER BY created_at DESC", []);
         const userCount = users.length;
         res.render('admin', { books, users, userCount, user: req.session.user });
     } catch (err) {
