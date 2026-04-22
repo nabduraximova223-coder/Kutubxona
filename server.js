@@ -54,7 +54,9 @@ const locales = require('./locales');
 // Global variables and Language Detection
 app.use((req, res, next) => {
     const lang = (req.session && req.session.lang) ? req.session.lang : 'uz';
-    if (req.session) req.session.lang = lang;
+    if (req.session && !['uz', 'ru', 'en'].includes(req.session.lang)) {
+        req.session.lang = 'uz';
+    }
 
     const t = (key) => {
         const cleanKey = key.trim();
@@ -70,7 +72,7 @@ app.use((req, res, next) => {
 // Set Language Route
 app.get('/set-lang/:lang', (req, res) => {
     const lang = req.params.lang;
-    if (['uz', 'ru'].includes(lang)) {
+    if (['uz', 'ru', 'en'].includes(lang)) {
         req.session.lang = lang;
     }
     const referer = req.headers.referer || '/';
