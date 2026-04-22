@@ -69,18 +69,32 @@ router.post('/delete/:id', async (req, res) => {
     }
 });
 
-// Edit Book
+// Edit Book Page
+router.get('/edit/:id', async (req, res) => {
+    try {
+        const book = await db.getRow("SELECT * FROM books WHERE id = $1", [req.params.id]);
+        if (!book) {
+            return res.status(404).send("Kitob topilmadi");
+        }
+        res.render('edit-book', { book, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Xatolik: " + err.message);
+    }
+});
+
+// Update Book
 router.post('/edit/:id', async (req, res) => {
-    const { title, author, subject, description } = req.body;
+    const { title, author, subject, faculty, course, description } = req.body;
     try {
         await db.run(
-            "UPDATE books SET title = $1, author = $2, subject = $3, description = $4 WHERE id = $5",
-            [title, author, subject, description, req.params.id]
+            "UPDATE books SET title = $1, author = $2, subject = $3, faculty = $4, course = $5, description = $6 WHERE id = $7",
+            [title, author, subject, faculty, course, description, req.params.id]
         );
         res.redirect('/admin');
     } catch (err) {
         console.error(err);
-        res.redirect('/admin');
+        res.status(500).send("Xatolik: " + err.message);
     }
 });
 
