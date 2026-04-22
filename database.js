@@ -17,7 +17,8 @@ async function createTables() {
         password VARCHAR(255),
         role VARCHAR(50) DEFAULT 'user',
         faculty VARCHAR(255),
-        course INTEGER
+        course INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
     await pool.query(`CREATE TABLE IF NOT EXISTS books (
@@ -52,6 +53,7 @@ async function createTables() {
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS firstname VARCHAR(255)`);
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lastname VARCHAR(255)`);
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(255)`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`);
     } catch (e) {
         // Ignore if unsupported or already exists
     }
