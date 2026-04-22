@@ -11,6 +11,9 @@ async function createTables() {
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) UNIQUE,
         username VARCHAR(255) UNIQUE,
+        firstname VARCHAR(255),
+        lastname VARCHAR(255),
+        phone VARCHAR(255),
         password VARCHAR(255),
         role VARCHAR(50) DEFAULT 'user',
         faculty VARCHAR(255),
@@ -31,11 +34,24 @@ async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS videos (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        url VARCHAR(255) NOT NULL,
+        subject VARCHAR(255),
+        faculty VARCHAR(255),
+        course INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
     try {
         await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_sum INTEGER DEFAULT 0`);
         await pool.query(`ALTER TABLE books ADD COLUMN IF NOT EXISTS rating_count INTEGER DEFAULT 0`);
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS faculty VARCHAR(255)`);
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS course INTEGER`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS firstname VARCHAR(255)`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS lastname VARCHAR(255)`);
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(255)`);
     } catch (e) {
         // Ignore if unsupported or already exists
     }
