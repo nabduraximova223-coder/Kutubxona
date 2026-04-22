@@ -1,0 +1,72 @@
+<%- include('partials/header') %>
+
+    <div class="container" style="max-width: 800px; margin: 2rem auto;">
+        <h2 style="margin-bottom: 1.5rem;">Kitobni tahrirlash</h2>
+
+        <div class="form-container"
+            style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+            <form action="/admin/edit/<%= book.id %>" method="POST">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Kitob nomi</label>
+                        <input type="text" name="title" value="<%= book.title %>" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Muallif</label>
+                        <input type="text" name="author" value="<%= book.author %>" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fan / Soha</label>
+                        <input type="text" name="subject" value="<%= book.subject %>" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Fakultet</label>
+                        <select name="faculty" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="all" <%=book.faculty==='all' ? 'selected' : '' %>>Barcha fakultetlar (Umumiy)
+                            </option>
+                            <option value="ki" <%=book.faculty==='ki' ? 'selected' : '' %>>Kompyuter injiniringi
+                            </option>
+                            <option value="di" <%=book.faculty==='di' ? 'selected' : '' %>>Dasturiy injiniring</option>
+                            <option value="ax" <%=book.faculty==='ax' ? 'selected' : '' %>>Axborot xavfsizligi</option>
+                            <option value="tt" <%=book.faculty==='tt' ? 'selected' : '' %>>Telekommunikatsiya
+                                texnologiyalari</option>
+                            <option value="tv" <%=book.faculty==='tv' ? 'selected' : '' %>>Televizion texnologiyalar
+                            </option>
+                            <option value="im" <%=book.faculty==='im' ? 'selected' : '' %>>Iqtisodiyot va menejment
+                            </option>
+                            <option value="kt" <%=book.faculty==='kt' ? 'selected' : '' %>>Kasb ta'limi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Kurs</label>
+                        <select name="course" required
+                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="1" <%=book.course===1 ? 'selected' : '' %>>1-kurs</option>
+                            <option value="2" <%=book.course===2 ? 'selected' : '' %>>2-kurs</option>
+                            <option value="3" <%=book.course===3 ? 'selected' : '' %>>3-kurs</option>
+                            <option value="4" <%=book.course===4 ? 'selected' : '' %>>4-kurs</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">Tavsif</label>
+                    <textarea name="description" rows="4"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;"><%= book.description %></textarea>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn"
+                        style="background: #4a90e2; color: white; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Saqlash</button>
+                    <a href="/admin" class="btn"
+                        style="background: #6c757d; color: white; padding: 12px 25px; border: none; border-radius: 6px; text-decoration: none; font-weight: 600; text-align: center;">Bekor
+                        qilish</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
