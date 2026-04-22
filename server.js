@@ -6,6 +6,9 @@ const db = require('./database');
 
 const app = express();
 
+// Trust Vercel's proxy for secure cookies
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
