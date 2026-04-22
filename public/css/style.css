@@ -131,19 +131,19 @@ nav {
 }
 
 .logo {
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
     font-weight: bold;
     text-decoration: none;
     color: white;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: clamp(0.5rem, 2vw, 1.5rem);
 }
 
 .lang-switcher {
@@ -487,6 +487,53 @@ footer {
     text-align: left;
 }
 
+.content-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.main-content {
+    flex: 3;
+}
+
+.sidebar {
+    flex: 1;
+    background: var(--glass-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.video-card a {
+    display: block;
+    text-align: center;
+    background: white;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.video-card a:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        margin-top: 1rem;
+    }
+}
+
 .view-header {
     display: flex;
     align-items: center;
@@ -740,4 +787,119 @@ th {
     background: #1a2a44;
     transform: rotate(45deg);
     z-index: -1;
+}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 0 15px;
+    }
+
+    .welcome-container {
+        padding: 4rem 1.5rem;
+        min-height: auto;
+    }
+
+    .welcome-title {
+        font-size: 2.2rem;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .welcome-actions {
+        flex-direction: column;
+        width: 100%;
+        gap: 1rem;
+    }
+
+    .welcome-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-links {
+        gap: 0.8rem;
+    }
+
+    .logo span {
+        display: none;
+    }
+
+    .logo i {
+        font-size: 1.8rem;
+    }
+
+    .faculty-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .course-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .course-card {
+        padding: 2rem 1rem;
+    }
+
+    .course-card i {
+        font-size: 2.5rem;
+    }
+
+    .subject-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .book-info {
+        padding: 1.2rem;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters select, .filters input, .filters button {
+        width: 100%;
+    }
+
+    /* Responsive Table */
+    .admin-container {
+        overflow-x: auto;
+    }
+
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .form-container {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
+
+    /* Fix grids inside forms */
+    .form-container form div {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .course-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+
+    .lang-switcher a {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }
