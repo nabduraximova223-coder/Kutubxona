@@ -9,9 +9,11 @@ router.get('/', (req, res) => {
     res.render('index', { user: req.session.user, isLandingPage: true });
 });
 
-// Register Page (Step 1: Email)
+// Register Page (Unified)
 router.get('/register', (req, res) => {
+    // If already logged in, redirect to library
     if (req.session && req.session.user) return res.redirect('/library');
+
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
     req.session.challenge = {
@@ -19,22 +21,16 @@ router.get('/register', (req, res) => {
         answer: (num1 + num2).toString()
     };
     res.render('register', {
-        user: req.session.user,
+        user: null,
         challenge: req.session.challenge.question
     });
 });
 
-// Register Logic (Step 1: Email -> OTP)
+// Register Logic (Unified)
 router.post('/register', async (req, res) => {
-    const { email, challenge_answer } = req.body;
+    const { firstname, lastname, email, phone, username, password, confirm_password, challenge_answer } = req.body;
 
-    if (!email) {
-        return res.render('register', {
-            error: "Email manzilni kiriting",
-            challenge: req.session.challenge ? req.session.challenge.question : ""
-        });
-    }
-
+    // Check challenge first
     if (!challenge_answer || challenge_answer !== req.session.challenge.answer) {
         const num1 = Math.floor(Math.random() * 10) + 1;
         const num2 = Math.floor(Math.random() * 10) + 1;
@@ -48,112 +44,61 @@ router.post('/register', async (req, res) => {
         });
     }
 
-    try {
-        const row = await db.getRow("SELECT * FROM users WHERE email = $1", [email]);
-        if (row) {
-            return res.render('register', {
-                error: "Bu email allaqachon ro'yxatdan o'tgan",
-                challenge: req.session.challenge ? req.session.challenge.question : ""
-            });
-        }
-
-        req.session.registration = { email: email, step: 'complete' };
-        res.redirect('/complete-register');
-    } catch (err) {
-        console.error(err);
-        res.render('register', { error: "Xatolik yuz berdi", challenge: "" });
-    }
-});
-
-// Verify OTP Page
-router.get('/verify-otp', (req, res) => {
-    if (req.session && req.session.user) return res.redirect('/library');
-    if (!req.session.registration || req.session.registration.step !== 'verify') {
-        return res.redirect('/register');
-    }
-    res.render('verify-otp', {
-        user: req.session.user,
-        dev_otp: req.session.registration.otp
-    });
-});
-
-// Verify OTP Logic
-router.post('/verify-otp', (req, res) => {
-    const { otp } = req.body;
-    const sessionReg = req.session.registration;
-
-    if (!sessionReg || sessionReg.step !== 'verify') {
-        return res.redirect('/register');
-    }
-
-    if (otp === sessionReg.otp) {
-        sessionReg.step = 'complete';
-        res.redirect('/complete-register');
-    } else {
-        res.render('verify-otp', { error: "Noto'g'ri kod kiritildi", dev_otp: sessionReg.otp });
-    }
-});
-
-// Complete Registration Page
-router.get('/complete-register', (req, res) => {
-    if (req.session && req.session.user) return res.redirect('/library');
-    if (!req.session.registration || req.session.registration.step !== 'complete') {
-        return res.redirect('/register');
-    }
-    res.render('complete-register', { user: req.session.user });
-});
-
-// Complete Registration Logic
-router.post('/complete-register', async (req, res) => {
-    const { firstname, lastname, phone, username, password, confirm_password } = req.body;
-    const sessionReg = req.session.registration;
-
-    if (!sessionReg || sessionReg.step !== 'complete') {
-        return res.redirect('/register');
-    }
-
-    if (!firstname || !lastname || !phone || !username || !password || !confirm_password) {
-        return res.render('complete-register', { error: "Barcha maydonlarni to'ldiring" });
+    if (!firstname || !lastname || !email || !phone || !username || !password || !confirm_password) {
+        return res.render('register', {
+            error: "Barcha maydonlarni to'ldiring",
+            challenge: req.session.challenge.question
+        });
     }
 
     if (password !== confirm_password) {
-        return res.render('complete-register', { error: "Parollar bir-biriga mos kelmadi." });
+        return res.render('register', {
+            error: "Parollar bir-biriga mos kelmadi.",
+            challenge: req.session.challenge.question
+        });
     }
 
-    // Parol kuchlilik tekshiruvi
+    // Password strength check
     if (password.length < 8) {
-        return res.render('complete-register', { error: "Parol kamida 8 ta belgidan iborat bo'lishi kerak." });
+        return res.render('register', { error: "Parol kamida 8 ta belgidan iborat bo'lishi kerak.", challenge: req.session.challenge.question });
     }
     if (!/[A-Z]/.test(password)) {
-        return res.render('complete-register', { error: "Parolda kamida 1 ta KATTA harf bo'lishi shart (A-Z)." });
+        return res.render('register', { error: "Parolda kamida 1 ta KATTA harf bo'lishi shart (A-Z).", challenge: req.session.challenge.question });
     }
     if (!/[a-z]/.test(password)) {
-        return res.render('complete-register', { error: "Parolda kamida 1 ta kichik harf bo'lishi shart (a-z)." });
+        return res.render('register', { error: "Parolda kamida 1 ta kichik harf bo'lishi shart (a-z).", challenge: req.session.challenge.question });
     }
     if (!/[0-9]/.test(password)) {
-        return res.render('complete-register', { error: "Parolda kamida 1 ta raqam bo'lishi shart (0-9)." });
+        return res.render('register', { error: "Parolda kamida 1 ta raqam bo'lishi shart (0-9).", challenge: req.session.challenge.question });
     }
 
     try {
+        // Check if email or username exists
+        const emailRow = await db.getRow("SELECT * FROM users WHERE email = $1", [email]);
+        if (emailRow) {
+            return res.render('register', { error: "Bu email allaqachon ro'yxatdan o'tgan", challenge: req.session.challenge.question });
+        }
+
+        const userRow = await db.getRow("SELECT * FROM users WHERE username = $1", [username]);
+        if (userRow) {
+            return res.render('register', { error: "Bu Login (username) allaqachon band. Iltimos, boshqasini tanlang.", challenge: req.session.challenge.question });
+        }
+
         const hashedPassword = bcrypt.hashSync(password, 10);
         await db.run(
             "INSERT INTO users (email, username, firstname, lastname, phone, password) VALUES ($1, $2, $3, $4, $5, $6)",
-            [sessionReg.email, username, firstname, lastname, phone, hashedPassword]
+            [email, username, firstname, lastname, phone, hashedPassword]
         );
+
+        // Success - clear registration temp data and redirect to login
         delete req.session.registration;
         res.redirect('/login');
     } catch (err) {
         console.error(err);
-        const msg = err.message || '';
-        if (msg.includes('unique constraint') && msg.includes('users_username_key')) {
-            return res.render('complete-register', { error: "Bu Login (username) allaqachon band. Iltimos, boshqasini tanlang." });
-        }
-        if (msg.includes('unique constraint') && msg.includes('users_email_key')) {
-            return res.render('complete-register', { error: "Bu email allaqachon ro'yxatdan o'tgan." });
-        }
-        return res.render('complete-register', { error: "Tizim xatosi: " + msg });
+        res.render('register', { error: "Xatolik yuz berdi: " + err.message, challenge: req.session.challenge.question });
     }
 });
+
 
 // Login Page
 router.get('/login', (req, res) => {
