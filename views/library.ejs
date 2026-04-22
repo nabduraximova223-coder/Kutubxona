@@ -42,9 +42,12 @@
 
             <% } else if (locals.viewMode==='faculties' ) { %>
                 <!-- Step 2: Faculty Selection -->
-                <h2 class="section-title">
-                    <%= locals.t ? locals.t('select_faculty') : 'Fakultetni tanlang' %>
-                </h2>
+                <div class="selection-header">
+                    <a href="/library" class="btn-back-square"><i class="fas fa-arrow-left"></i></a>
+                    <h2 class="section-title">
+                        <%= locals.t ? locals.t('select_faculty') : 'Fakultetni tanlang' %>
+                    </h2>
+                </div>
                 <div class="faculty-grid">
                     <% faculties.forEach(faculty=> { %>
                         <a href="/library?course=<%= courseFilter %>&faculty=<%= faculty.id %>" class="faculty-card">
@@ -58,9 +61,13 @@
 
                 <% } else if (locals.viewMode==='subjects' ) { %>
                     <!-- Step 3: Subject Selection -->
-                    <h2 class="section-title">
-                        Fanlarni tanlang
-                    </h2>
+                    <div class="selection-header">
+                        <a href="/library?course=<%= courseFilter %>" class="btn-back-square"><i
+                                class="fas fa-arrow-left"></i></a>
+                        <h2 class="section-title">
+                            Fanlarni tanlang
+                        </h2>
+                    </div>
                     <div class="subject-grid">
                         <% subjects.forEach(subject=> { %>
                             <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>&subject=<%= subject %>"
@@ -76,8 +83,10 @@
                     <% } else if (locals.viewMode==='books' ) { %>
                         <!-- Step 3: Book Listing -->
                         <div class="books-view">
-                            <div class="view-header" style="justify-content: space-between;">
-                                <h2>
+                            <div class="view-header" style="justify-content: flex-start; gap: 15px;">
+                                <a href="/library?course=<%= courseFilter %>&faculty=<%= facultyFilter %>"
+                                    class="btn-back-square"><i class="fas fa-arrow-left"></i></a>
+                                <h2 style="display: flex; align-items: center; gap: 10px;">
                                     <i class="fas fa-layer-group"></i>
                                     <%= locals.t ? locals.t('books') : 'Kitoblar' %>
                                 </h2>
