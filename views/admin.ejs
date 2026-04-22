@@ -88,13 +88,14 @@
                         <%= (book.course && t('course_' + book.course)) ? t('course_' + book.course) : (book.course
                             || 'Noma\' lum') + '-kurs' %>
                     </td>
-                    <td class="actions">
+                    <td class="actions" style="display: flex; gap: 5px;">
+                        <a href="/admin/edit/<%= book.id %>" class="btn"
+                            style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #4a90e2; text-decoration: none; color: white;">TAHRIRLASH</a>
                         <form action="/admin/delete/<%= book.id %>" method="POST"
-                            onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');">
+                            onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');" style="display: inline;">
                             <button type="submit" class="btn btn-danger"
-                                style="padding: 0.5rem 1rem; font-size: 0.9rem;">O'chirish</button>
+                                style="padding: 0.5rem 1rem; font-size: 0.9rem;">O'CHIRISH</button>
                         </form>
-                        <!-- Edit functionality could be added here as a modal or separate page -->
                     </td>
                 </tr>
                 <% }) %>
