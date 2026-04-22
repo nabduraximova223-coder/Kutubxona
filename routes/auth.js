@@ -105,22 +105,40 @@ router.get('/complete-register', (req, res) => {
 
 // Complete Registration Logic
 router.post('/complete-register', async (req, res) => {
-    const { username, password } = req.body;
+    const { firstname, lastname, phone, username, password, confirm_password } = req.body;
     const sessionReg = req.session.registration;
 
     if (!sessionReg || sessionReg.step !== 'complete') {
         return res.redirect('/register');
     }
 
-    if (!username || !password) {
+    if (!firstname || !lastname || !phone || !username || !password || !confirm_password) {
         return res.render('complete-register', { error: "Barcha maydonlarni to'ldiring" });
+    }
+
+    if (password !== confirm_password) {
+        return res.render('complete-register', { error: "Parollar bir-biriga mos kelmadi." });
+    }
+
+    // Parol kuchlilik tekshiruvi
+    if (password.length < 8) {
+        return res.render('complete-register', { error: "Parol kamida 8 ta belgidan iborat bo'lishi kerak." });
+    }
+    if (!/[A-Z]/.test(password)) {
+        return res.render('complete-register', { error: "Parolda kamida 1 ta KATTA harf bo'lishi shart (A-Z)." });
+    }
+    if (!/[a-z]/.test(password)) {
+        return res.render('complete-register', { error: "Parolda kamida 1 ta kichik harf bo'lishi shart (a-z)." });
+    }
+    if (!/[0-9]/.test(password)) {
+        return res.render('complete-register', { error: "Parolda kamida 1 ta raqam bo'lishi shart (0-9)." });
     }
 
     try {
         const hashedPassword = bcrypt.hashSync(password, 10);
         await db.run(
-            "INSERT INTO users (email, username, password) VALUES ($1, $2, $3)",
-            [sessionReg.email, username, hashedPassword]
+            "INSERT INTO users (email, username, firstname, lastname, phone, password) VALUES ($1, $2, $3, $4, $5, $6)",
+            [sessionReg.email, username, firstname, lastname, phone, hashedPassword]
         );
         delete req.session.registration;
         res.redirect('/login');
@@ -128,7 +146,7 @@ router.post('/complete-register', async (req, res) => {
         console.error(err);
         const msg = err.message || '';
         if (msg.includes('unique constraint') && msg.includes('users_username_key')) {
-            return res.render('complete-register', { error: "Bu login allaqachon band. Iltimos, boshqa login tanlang." });
+            return res.render('complete-register', { error: "Bu Login (username) allaqachon band. Iltimos, boshqasini tanlang." });
         }
         if (msg.includes('unique constraint') && msg.includes('users_email_key')) {
             return res.render('complete-register', { error: "Bu email allaqachon ro'yxatdan o'tgan." });
