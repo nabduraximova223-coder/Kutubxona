@@ -109,7 +109,8 @@
                                                         data-original-rating="<%= (book.rating_count > 0 ? (book.rating_sum / book.rating_count) : 0).toFixed(1) %>"
                                                         style="display: flex; gap: 3px; cursor: pointer; white-space: nowrap;">
                                                         <% const count=book.rating_count || 0; const sum=book.rating_sum
-                                                            || 0; const avg=count> 0 ? (sum / count) : 0;
+                                                            || 0; const avg=count> 0 ? (sum
+                                                            / count) : 0;
                                                             for(let i=1; i<=5; i++) { const isFilled=i
                                                                 <=Math.round(avg); %>
                                                                 <i class="<%= isFilled ? 'fas' : 'far' %> fa-star"
@@ -118,7 +119,8 @@
                                                                 <% } %>
                                                                     <span
                                                                         style="font-size: 0.85rem; color: var(--text-muted); margin-left: 5px; align-self: center;">(
-                                                                        <%= avg.toFixed(1) %>)</span>
+                                                                        <%= avg.toFixed(1) %>)
+                                                                    </span>
                                                     </div>
                                                 </h3>
                                                 <p class="book-author"><i class="fas fa-user-edit"></i>
