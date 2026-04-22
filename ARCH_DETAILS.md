@@ -2,6 +2,9 @@
 
 Bu loyiha **Node.js** texnologiyasi asosida qurilgan bo'lib, zamonaviy va kengaytiriluvchan (scalable) arxitekturaga ega.
 
+## Visual Arxitektura
+![Arxitektura Diagrammasi](./public/images/architecture.png)
+
 ## 1. Texnologiyalar Paketi (Tech Stack)
 
 *   **Backend:** Node.js va Express.js frameworki.
