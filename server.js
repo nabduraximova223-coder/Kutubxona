@@ -15,16 +15,21 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Cookie-Session (works on Vercel serverless)
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(cookieSession({
-    name: 'session',
+    name: 'tatu_session_v2', // Renamed to force previous sessions to expire instantly
     keys: [process.env.SESSION_SECRET || 'tatu_library_secret_key'],
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    // maxAge o'chirildi: endi brauzer yopilganda sessiya nobud bo'ladi
     secure: isProduction,   // HTTPS (Vercel) da true bo'ladi
     httpOnly: true,
     sameSite: 'lax'
 }));
 
-// Session save compatibility shim
+// Session save compatibility shim and Rolling session
 app.use((req, res, next) => {
+    // Update session timestamp to keep it alive if active, creating a 1-hour rolling window
+    if (req.session && req.session.user) {
+        req.session.now = Date.now();
+    }
+
     if (req.session && !req.session.save) {
         req.session.save = (cb) => { if (cb) cb(); };
     }
@@ -76,10 +81,10 @@ const adminRoutes = require('./routes/admin');
 const settingsRoutes = require('./routes/settings');
 const chatRoutes = require('./routes/chat_route');
 
+app.use('/admin', adminRoutes);
 app.use('/', authRoutes);
 app.use('/', bookRoutes);
 app.use('/', settingsRoutes);
-app.use('/admin', adminRoutes);
 app.use('/chat', chatRoutes);
 
 // Start Server (local dev)
