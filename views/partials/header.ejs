@@ -38,6 +38,24 @@
                                         class="<%= (locals.currentLang === 'en') ? 'active' : '' %>"><span
                                             class="fi fi-gb"></span> EN</a>
                                 </div>
+
+                                <div class="notifications-wrapper">
+                                    <button class="notification-bell" id="notif-btn">
+                                        <i class="fas fa-bell"></i>
+                                        <span class="notification-badge" id="notif-badge">0</span>
+                                    </button>
+                                    <div class="notification-dropdown" id="notif-dropdown">
+                                        <div class="notification-header">
+                                            <span>
+                                                <%= locals.t ? locals.t('notifications') : 'Bildirishnomalar' %>
+                                            </span>
+                                        </div>
+                                        <div class="notification-list" id="notif-list">
+                                            <div class="no-notifications">Yuklanmoqda...</div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <button id="theme-toggle" class="theme-btn-premium"
                                     title="<%= locals.t ? locals.t('design') : 'Dizayn' %>">
                                     <i class="fas fa-moon"></i>
@@ -100,4 +118,66 @@
                                 updateIcon(newTheme);
                             });
                         }
+
+                        // Notifications Script
+                        const notifBtn = document.getElementById('notif-btn');
+                        const notifDropdown = document.getElementById('notif-dropdown');
+                        const notifList = document.getElementById('notif-list');
+                        const notifBadge = document.getElementById('notif-badge');
+                        const currentLang = '<%= locals.currentLang %>';
+
+                        async function fetchNotifications() {
+                            try {
+                                const res = await fetch('/notifications');
+                                const data = await res.json();
+                                renderNotifications(data);
+                            } catch (e) { console.error(e); }
+                        }
+
+                        function renderNotifications(notifs) {
+                            if (!notifs || notifs.length === 0) {
+                                notifList.innerHTML = '<div class="no-notifications">Yangi xabarlar yo\'q</div>';
+                                notifBadge.style.display = 'none';
+                                return;
+                            }
+
+                            const unreadCount = notifs.filter(n => !n.is_read).length;
+                            if (unreadCount > 0) {
+                                notifBadge.textContent = unreadCount;
+                                notifBadge.style.display = 'flex';
+                            } else {
+                                notifBadge.style.display = 'none';
+                            }
+
+                            notifList.innerHTML = notifs.map(n => {
+                                const msg = n['message_' + currentLang] || n.message_uz;
+                                return `
+                                    <a href="${n.link}" class="notification-item ${n.is_read ? '' : 'unread'}">
+                                        <p>${msg}</p>
+                                        <span class="notification-time">${new Date(n.created_at).toLocaleString()}</span>
+                                    </a>
+                                `;
+                            }).join('');
+                        }
+
+                        if (notifBtn) {
+                            notifBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                notifDropdown.classList.toggle('active');
+                                if (notifDropdown.classList.contains('active')) {
+                                    // Mark as read locally or server-side if needed
+                                }
+                            });
+                        }
+
+                        document.addEventListener('click', (e) => {
+                            if (notifDropdown && !notifDropdown.contains(e.target) && e.target !== notifBtn) {
+                                notifDropdown.classList.remove('active');
+                            }
+                        });
+
+                        // Initial fetch
+                        fetchNotifications();
+                        // Poll every 60 seconds
+                        setInterval(fetchNotifications, 60000);
                     </script>
