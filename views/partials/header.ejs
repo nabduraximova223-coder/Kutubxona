@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.0.0/css/flag-icons.min.css" />
+    <script>
+        (function () {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 </head>
 
 <body>
@@ -31,6 +37,10 @@
                                     <a href="/set-lang/en"
                                         class="<%= (locals.currentLang === 'en') ? 'active' : '' %>"><span
                                             class="fi fi-gb"></span> EN</a>
+                                    <button id="theme-toggle" class="theme-toggle-btn"
+                                        title="<%= locals.t ? locals.t('design') : 'Dizayn' %>">
+                                        <i class="fas fa-moon"></i>
+                                    </button>
                                 </div>
                                 <% if (!locals.isLandingPage) { %>
                                     <% if (locals.user) { %>
@@ -63,3 +73,31 @@
                     </div>
                 </header>
                 <main>
+                    <script>
+                        const themeToggle = document.getElementById('theme-toggle');
+                        if (themeToggle) {
+                            const html = document.documentElement;
+                            const icon = themeToggle.querySelector('i');
+
+                            function updateIcon(theme) {
+                                if (theme === 'dark') {
+                                    icon.classList.remove('fa-moon');
+                                    icon.classList.add('fa-sun');
+                                } else {
+                                    icon.classList.remove('fa-sun');
+                                    icon.classList.add('fa-moon');
+                                }
+                            }
+
+                            updateIcon(html.getAttribute('data-theme'));
+
+                            themeToggle.addEventListener('click', () => {
+                                const currentTheme = html.getAttribute('data-theme');
+                                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                                html.setAttribute('data-theme', newTheme);
+                                localStorage.setItem('theme', newTheme);
+                                updateIcon(newTheme);
+                            });
+                        }
+                    </script>
