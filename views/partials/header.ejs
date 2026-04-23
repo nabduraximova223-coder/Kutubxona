@@ -40,6 +40,11 @@
                                             </a>
                                             <% } %>
 
+                                                <a href="/library/my-books" style="margin-left: 10px;">
+                                                    <i class="fas fa-bookmark"></i>
+                                                    <%= locals.t ? locals.t('my_books') : 'Mening kitoblarim' %>
+                                                </a>
+
                                                 <a href="/logout" style="margin-left: 10px;">
                                                     <i class="fas fa-sign-out-alt"></i>
                                                     <%= locals.t ? locals.t('logout') : 'Chiqish' %>
