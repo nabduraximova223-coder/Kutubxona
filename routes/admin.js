@@ -53,6 +53,20 @@ router.post('/add', upload.single('bookFile'), async (req, res) => {
             `INSERT INTO books (title, author, subject, faculty, course, description, filepath) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [title, author, subject, faculty, course, description, filepath]
         );
+
+        // Add Notification for all users
+        const msgUz = `${subject} fanidan yangi kitob qo'shildi: ${title}`;
+        const msgRu = `Добавлена новая книга по предмету ${subject}: ${title}`;
+        const msgEn = `New book added for ${subject}: ${title}`;
+
+        // Link to the library with subject filter
+        const link = `/library?subject=${encodeURIComponent(subject)}`;
+
+        await db.run(`
+            INSERT INTO notifications (message_uz, message_ru, message_en, link)
+            VALUES ($1, $2, $3, $4)
+        `, [msgUz, msgRu, msgEn, link]);
+
         res.redirect('/admin');
     } catch (err) {
         console.error(err);
