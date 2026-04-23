@@ -112,6 +112,25 @@ router.get('/library', isAuthenticated, async (req, res) => {
     }
 });
 
+// My Downloaded Books
+router.get('/my-books', isAuthenticated, async (req, res) => {
+    try {
+        const sql = `
+            SELECT b.*, MAX(ua.created_at) as downloaded_at 
+            FROM books b 
+            JOIN user_activity ua ON b.id = ua.book_id 
+            WHERE ua.user_id = $1 AND ua.action_type = 'download' 
+            GROUP BY b.id 
+            ORDER BY downloaded_at DESC
+        `;
+        const books = await db.getAll(sql, [req.session.user.id]);
+        res.render('my-books', { books, user: req.session.user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+});
+
 // Download Book
 router.get('/download/:id', isAuthenticated, async (req, res) => {
     try {
