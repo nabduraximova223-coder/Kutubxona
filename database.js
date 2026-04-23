@@ -66,6 +66,17 @@ async function createTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        message_uz TEXT,
+        message_ru TEXT,
+        message_en TEXT,
+        link VARCHAR(255),
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
     await pool.query(`CREATE TABLE IF NOT EXISTS chats (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
