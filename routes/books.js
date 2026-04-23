@@ -113,7 +113,7 @@ router.get('/library', isAuthenticated, async (req, res) => {
 });
 
 // My Downloaded Books
-router.get('/my-books', isAuthenticated, async (req, res) => {
+router.get('/library/my-books', isAuthenticated, async (req, res) => {
     try {
         const sql = `
             SELECT b.*, MAX(ua.created_at) as downloaded_at 
