@@ -209,4 +209,25 @@ router.post('/rate/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+// Get Notifications
+router.get('/notifications', isAuthenticated, async (req, res) => {
+    try {
+        const notifications = await db.getAll(`
+            SELECT * FROM notifications 
+            WHERE (user_id IS NULL OR user_id = $1) 
+            ORDER BY created_at DESC LIMIT 10
+        `, [req.session.user.id]);
+        res.json(notifications);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
+// Mark all as read (Simplified for demo: just delete old ones or use a 'seen' flag if we had a per-user junction)
+// For this simple implementation, we'll just return success
+router.post('/notifications/read', isAuthenticated, async (req, res) => {
+    res.json({ success: true });
+});
+
 module.exports = router;
