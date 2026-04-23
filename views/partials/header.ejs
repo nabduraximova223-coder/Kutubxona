@@ -37,11 +37,11 @@
                                     <a href="/set-lang/en"
                                         class="<%= (locals.currentLang === 'en') ? 'active' : '' %>"><span
                                             class="fi fi-gb"></span> EN</a>
-                                    <button id="theme-toggle" class="theme-toggle-btn"
-                                        title="<%= locals.t ? locals.t('design') : 'Dizayn' %>">
-                                        <i class="fas fa-moon"></i>
-                                    </button>
                                 </div>
+                                <button id="theme-toggle" class="theme-btn-premium"
+                                    title="<%= locals.t ? locals.t('design') : 'Dizayn' %>">
+                                    <i class="fas fa-moon"></i>
+                                </button>
                                 <% if (!locals.isLandingPage) { %>
                                     <% if (locals.user) { %>
                                         <% if (locals.user.role==='admin' ) { %>
